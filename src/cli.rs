@@ -152,4 +152,11 @@ pub enum Commands {
         /// Language code (en/zh)
         lang: Option<String>,
     },
+
+    /// Find tools with free AI models
+    Free {
+        /// Show only tools with free pro-grade models
+        #[arg(short, long)]
+        pro: bool,
+    },
 }

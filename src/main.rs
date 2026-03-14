@@ -103,6 +103,10 @@ fn main() -> anyhow::Result<()> {
             let cmd = LangCommand::new(lang);
             cmd.execute()?;
         }
+        Commands::Free { pro } => {
+            let cmd = FreeCommand::new(pro);
+            cmd.execute()?;
+        }
     }
 
     Ok(())

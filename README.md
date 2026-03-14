@@ -37,6 +37,7 @@ If you use AI coding tools like Claude Code, Cursor, Gemini CLI, or others, you 
 | **Status** | Check configuration status and API key availability |
 | **Config** | Interactive API key configuration wizard |
 | **Update** | Keep all tools up to date |
+| **Free** | Find tools with free AI models and pro-grade access |
 
 ### Supported Tools
 
@@ -193,6 +194,7 @@ vcm run claude-code
 | `vcm search <query>` | Search tools |
 | `vcm run <tool>` | Launch a CLI tool |
 | `vcm outdated` | Check for updates |
+| `vcm free [--pro]` | Find tools with free AI models |
 | `vcm doctor` | System diagnostics |
 | `vcm init` | Interactive setup wizard |
 | `vcm usage` | Show usage statistics |
@@ -246,6 +248,68 @@ VCM stores its configuration in `~/.config/vcm/`:
 language = "en"
 default_tool = "claude-code"
 ```
+
+---
+
+## Find Free AI Models
+
+VCM helps you discover tools that offer free access to pro-grade AI models. This is perfect for developers who want to use powerful AI coding assistants without paying for API access.
+
+### List Tools with Free Models
+
+```bash
+vcm free
+```
+
+Output:
+```
+🎁 Tools with Free AI Models
+
+★ Gemini CLI [Best Free Choice!]
+  Free Limit: 100 requests/day Gemini 2.5 Pro
+  Free Models:
+    ● Gemini 2.5 Pro [Pro-Grade] - 63.2% SWE-bench
+    ● Gemini 3 Pro [Pro-Grade] - 76.2% SWE-bench (waitlist)
+  Card Required: No card
+  Note: Best free tier for pro-grade models!
+
+★ Ollama [Best Free Choice!]
+  Free Limit: Unlimited - runs locally
+  Free Models:
+    ● Qwen2.5-Coder-32B [Pro-Grade] - Excellent for coding
+    ● DeepSeek Coder V2 [Pro-Grade] - Great for coding
+  Card Required: No card
+  Note: 100% FREE - runs on your hardware!
+```
+
+### Show Only Tools with Free Pro-Grade Models
+
+```bash
+vcm free --pro
+```
+
+### Best Free Options
+
+| Tool | Free Limit | Pro-Grade Models | Card Required |
+|------|-----------|------------------|---------------|
+| **Gemini CLI** | 100 req/day | Gemini 2.5 Pro, Gemini 3 Pro | No |
+| **Ollama** | Unlimited local | Qwen2.5-Coder, DeepSeek Coder | No |
+| **Aider** | BYOK/Local | Qwen3-Coder (OpenRouter) | No |
+| **Kiro** | 50 credits/mo | Claude 4 Sonnet | No |
+| **OpenCode** | BYOK | Gemini 2.5 Pro, Qwen3-Coder | No |
+| **Kilo Code** | $25 signup | Claude Opus 4.5, GPT-4.1 | Yes |
+
+### What is a Pro-Grade Model?
+
+Models with **≥60% on SWE-bench Verified** are considered pro-grade for real-world coding tasks:
+
+| Model | SWE-bench | Provider |
+|-------|-----------|----------|
+| Claude Opus 4.5 | 80.9% | Anthropic |
+| GPT-5.1-Codex-Max | 77.9% | OpenAI |
+| Gemini 3 Pro | 76.2% | Google |
+| Gemini 2.5 Pro | 63.2% | Google |
+| Qwen3-Coder-480B | 69.6% | Alibaba |
 
 ---
 

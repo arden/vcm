@@ -44,6 +44,57 @@ pub struct Tool {
     /// 是否为推荐工具
     #[serde(default)]
     pub featured: bool,
+    /// 定价信息
+    #[serde(default)]
+    pub pricing: Option<Pricing>,
+}
+
+/// 定价信息
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Pricing {
+    /// 是否有免费额度
+    #[serde(default)]
+    pub free_tier: bool,
+    /// 免费额度描述（如 "100 requests/day"）
+    #[serde(default)]
+    pub free_limit: Option<String>,
+    /// 免费可用的模型列表
+    #[serde(default)]
+    pub free_models: Vec<ModelInfo>,
+    /// 付费可用的模型列表
+    #[serde(default)]
+    pub paid_models: Vec<ModelInfo>,
+    /// 是否需要信用卡
+    #[serde(default)]
+    pub credit_card_required: bool,
+    /// 价格说明
+    #[serde(default)]
+    pub price_note: Option<String>,
+}
+
+/// 模型信息
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ModelInfo {
+    /// 模型名称
+    pub name: String,
+    /// 模型描述（如 SWE-bench 分数）
+    #[serde(default)]
+    pub description: Option<String>,
+    /// 是否为专业级模型（SWE-bench >= 60%）
+    #[serde(default)]
+    pub pro_grade: bool,
+}
+
+impl Pricing {
+    /// 是否有免费的专业级模型
+    pub fn has_free_pro_models(&self) -> bool {
+        self.free_models.iter().any(|m| m.pro_grade)
+    }
+    
+    /// 获取免费的专业级模型列表
+    pub fn free_pro_models(&self) -> Vec<&ModelInfo> {
+        self.free_models.iter().filter(|m| m.pro_grade).collect()
+    }
 }
 
 fn default_true() -> bool {

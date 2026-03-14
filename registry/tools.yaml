@@ -38,6 +38,10 @@ tools:
     is_cli: true
     is_gui: false
     featured: true
+    pricing:
+      free_tier: false
+      credit_card_required: false
+      price_note: "Requires Anthropic API Key (pay-per-use)"
 
   # === Open Source ===
   - id: aider
@@ -74,6 +78,19 @@ tools:
     is_cli: true
     is_gui: false
     featured: true
+    pricing:
+      free_tier: true
+      free_limit: "Unlimited with BYOK or local models"
+      free_models:
+        - name: "Local models via Ollama"
+          pro_grade: false
+        - name: "Qwen3-Coder (via OpenRouter free)"
+          pro_grade: true
+          description: "69.6% SWE-bench"
+        - name: "Gemini Flash (via free API)"
+          pro_grade: false
+      credit_card_required: false
+      price_note: "Free with own API keys or local models"
 
   # === GitHub ===
   - id: copilot-cli
@@ -105,6 +122,20 @@ tools:
     is_cli: true
     is_gui: false
     featured: true
+    pricing:
+      free_tier: true
+      free_limit: "50 chat requests + 2,000 completions/month"
+      free_models:
+        - name: "GPT-4.1"
+          pro_grade: true
+        - name: "Claude Opus 3.5"
+          pro_grade: true
+        - name: "Gemini 2.0 Flash"
+          pro_grade: false
+        - name: "Grok Code Fast 1"
+          pro_grade: false
+      credit_card_required: false
+      price_note: "Pro: $10/mo for 300 requests"
 
   # === Google ===
   - id: gemini-cli
@@ -136,6 +167,21 @@ tools:
     is_cli: true
     is_gui: false
     featured: true
+    pricing:
+      free_tier: true
+      free_limit: "100 requests/day Gemini 2.5 Pro"
+      free_models:
+        - name: "Gemini 2.5 Pro"
+          pro_grade: true
+          description: "63.2% SWE-bench"
+        - name: "Gemini 2.5 Flash"
+          pro_grade: false
+          description: "250 requests/day"
+        - name: "Gemini 3 Pro"
+          pro_grade: true
+          description: "76.2% SWE-bench (waitlist)"
+      credit_card_required: false
+      price_note: "Best free tier for pro-grade models!"
 
   # === Cursor ===
   - id: cursor
@@ -163,6 +209,24 @@ tools:
     is_cli: false
     is_gui: true
     featured: true
+    pricing:
+      free_tier: true
+      free_limit: "Unlimited completions, limited chat"
+      free_models:
+        - name: "Cursor Small"
+          pro_grade: false
+        - name: "DeepSeek v3"
+          pro_grade: false
+        - name: "Gemini 2.5 Flash"
+          pro_grade: false
+        - name: "GPT-4o mini"
+          pro_grade: false
+          description: "500/day limit"
+        - name: "GPT-5.1-Codex-Max"
+          pro_grade: true
+          description: "Free until Dec 2025!"
+      credit_card_required: false
+      price_note: "Pro: $20/mo for unlimited access"
 
   # === Windsurf ===
   - id: windsurf
@@ -187,6 +251,20 @@ tools:
       - enterprise
     is_cli: false
     is_gui: true
+    pricing:
+      free_tier: true
+      free_limit: "25 prompt credits/month"
+      free_models:
+        - name: "OpenAI models"
+          pro_grade: true
+        - name: "Claude models"
+          pro_grade: true
+        - name: "Gemini models"
+          pro_grade: true
+        - name: "xAI models"
+          pro_grade: false
+      credit_card_required: true
+      price_note: "Pro: $15/mo for 500 credits"
 
   # === Ollama ===
   - id: ollama
@@ -215,6 +293,24 @@ tools:
       - opensource
     is_cli: true
     is_gui: false
+    pricing:
+      free_tier: true
+      free_limit: "Unlimited - runs locally"
+      free_models:
+        - name: "Qwen2.5-Coder-32B"
+          pro_grade: true
+          description: "Excellent for coding"
+        - name: "DeepSeek Coder V2"
+          pro_grade: true
+          description: "Great for coding"
+        - name: "CodeLlama"
+          pro_grade: false
+        - name: "Llama 3.x"
+          pro_grade: false
+        - name: "Mistral"
+          pro_grade: false
+      credit_card_required: false
+      price_note: "100% FREE - runs on your hardware!"
 
   # === Sourcegraph ===
   - id: amp
@@ -421,6 +517,18 @@ tools:
       - amazon
     is_cli: true
     is_gui: false
+    pricing:
+      free_tier: true
+      free_limit: "50 credits/month"
+      free_models:
+        - name: "Claude 4 Sonnet"
+          pro_grade: true
+          description: "Latest Claude model"
+        - name: "Claude 3.7 Sonnet"
+          pro_grade: true
+          description: "Excellent for coding"
+      credit_card_required: false
+      price_note: "14-day welcome bonus: 500 credits"
 
   # === iFlow CLI ===
   - id: iflow
@@ -469,6 +577,20 @@ tools:
     is_cli: true
     is_gui: false
     featured: true
+    pricing:
+      free_tier: true
+      free_limit: "Unlimited with free API providers"
+      free_models:
+        - name: "Gemini 2.5 Pro (free tier)"
+          pro_grade: true
+          description: "100 req/day via Google"
+        - name: "Qwen3-Coder (OpenRouter free)"
+          pro_grade: true
+          description: "50 req/day"
+        - name: "Local models via Ollama"
+          pro_grade: false
+      credit_card_required: false
+      price_note: "Free with many providers - BYOK!"
 
   # === Auggie ===
   - id: auggie
@@ -566,6 +688,23 @@ tools:
     is_cli: true
     is_gui: false
     featured: true
+    pricing:
+      free_tier: true
+      free_limit: "$25 signup credits (one-time)"
+      free_models:
+        - name: "Claude Opus 4.5"
+          pro_grade: true
+          description: "80.9% SWE-bench"
+        - name: "Claude Sonnet 4"
+          pro_grade: true
+          description: "72.7% SWE-bench"
+        - name: "Gemini 2.5 Pro"
+          pro_grade: true
+          description: "63.2% SWE-bench"
+        - name: "GPT-4.1"
+          pro_grade: true
+      credit_card_required: true
+      price_note: "$25 free credits on signup, then pay-per-use"
 
   # === Goose ===
   - id: goose

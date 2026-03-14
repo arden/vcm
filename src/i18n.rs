@@ -350,6 +350,29 @@ fn get_en_translations() -> &'static std::collections::HashMap<&'static str, &'s
         m.insert("registry.loaded", "Loaded {} tools");
         m.insert("registry.updated_at", "Updated at {}");
         
+        // Free 命令
+        m.insert("free.title", "Tools with Free AI Models");
+        m.insert("free.subtitle", "Find tools that offer free access to pro-grade AI models");
+        m.insert("free.pro_grade", "Pro-Grade Models");
+        m.insert("free.free_tier", "Free Tier");
+        m.insert("free.free_models", "Free Models");
+        m.insert("free.limit", "Free Limit");
+        m.insert("free.card_required", "Card Required");
+        m.insert("free.no_card", "No card");
+        m.insert("free.card_needed", "Card needed");
+        m.insert("free.install_hint", "Install: vcm install {}");
+        m.insert("free.none_found", "No tools with free models found");
+        m.insert("free.best_choice", "Best Free Choice!");
+        
+        // 定价相关
+        m.insert("pricing.free", "FREE");
+        m.insert("pricing.paid", "Paid");
+        m.insert("pricing.free_tier_available", "Free tier available");
+        m.insert("pricing.no_free_tier", "No free tier");
+        m.insert("pricing.models_available", "Models available");
+        m.insert("pricing.pro_grade", "Pro-Grade");
+        m.insert("pricing.note", "Note");
+        
         m
     })
 }
@@ -619,6 +642,29 @@ fn get_zh_translations() -> &'static std::collections::HashMap<&'static str, &'s
         m.insert("registry.none", "无");
         m.insert("registry.loaded", "已加载 {} 个工具");
         m.insert("registry.updated_at", "更新于 {}");
+        
+        // Free 命令
+        m.insert("free.title", "支持免费模型的工具");
+        m.insert("free.subtitle", "查找提供免费专业级 AI 模型访问的工具");
+        m.insert("free.pro_grade", "专业级模型");
+        m.insert("free.free_tier", "免费额度");
+        m.insert("free.free_models", "免费模型");
+        m.insert("free.limit", "免费限额");
+        m.insert("free.card_required", "需要信用卡");
+        m.insert("free.no_card", "无需信用卡");
+        m.insert("free.card_needed", "需要信用卡");
+        m.insert("free.install_hint", "安装: vcm install {}");
+        m.insert("free.none_found", "未找到支持免费模型的工具");
+        m.insert("free.best_choice", "最佳免费选择!");
+        
+        // 定价相关
+        m.insert("pricing.free", "免费");
+        m.insert("pricing.paid", "付费");
+        m.insert("pricing.free_tier_available", "有免费额度");
+        m.insert("pricing.no_free_tier", "无免费额度");
+        m.insert("pricing.models_available", "可用模型");
+        m.insert("pricing.pro_grade", "专业级");
+        m.insert("pricing.note", "备注");
         
         m
     })

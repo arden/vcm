@@ -20,6 +20,7 @@ pub mod usage;
 pub mod run;
 pub mod default;
 pub mod lang;
+pub mod free;
 
 pub use scan::ScanCommand;
 pub use list::ListCommand;
@@ -41,3 +42,4 @@ pub use usage::UsageCommand;
 pub use run::RunCommand;
 pub use default::DefaultCommand;
 pub use lang::LangCommand;
+pub use free::FreeCommand;

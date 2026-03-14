@@ -37,6 +37,7 @@
 | **状态** | 检查配置状态和 API Key 是否可用 |
 | **配置** | 交互式 API Key 配置向导 |
 | **更新** | 保持所有工具为最新版本 |
+| **免费模型** | 查找支持免费 AI 模型和专业级模型的工具 |
 
 ### 支持的工具
 
@@ -193,6 +194,7 @@ vcm run claude-code
 | `vcm search <query>` | 搜索工具 |
 | `vcm run <tool>` | 启动 CLI 工具 |
 | `vcm outdated` | 检查更新 |
+| `vcm free [--pro]` | 查找支持免费 AI 模型的工具 |
 | `vcm doctor` | 系统诊断 |
 | `vcm init` | 交互式初始化向导 |
 | `vcm usage` | 显示使用统计 |
@@ -246,6 +248,68 @@ VCM 将配置存储在 `~/.config/vcm/` 目录：
 language = "zh"
 default_tool = "claude-code"
 ```
+
+---
+
+## 查找免费 AI 模型
+
+VCM 帮助你发现提供免费专业级 AI 模型访问的工具。非常适合想要免费使用强大 AI 编程助手的开发者。
+
+### 列出支持免费模型的工具
+
+```bash
+vcm free
+```
+
+输出：
+```
+🎁 支持免费模型的工具
+
+★ Gemini CLI [最佳免费选择!]
+  免费限额: 100 requests/day Gemini 2.5 Pro
+  免费模型:
+    ● Gemini 2.5 Pro [专业级] - 63.2% SWE-bench
+    ● Gemini 3 Pro [专业级] - 76.2% SWE-bench (waitlist)
+  需要信用卡: 无需信用卡
+  备注: Best free tier for pro-grade models!
+
+★ Ollama [最佳免费选择!]
+  免费限额: Unlimited - runs locally
+  免费模型:
+    ● Qwen2.5-Coder-32B [专业级] - Excellent for coding
+    ● DeepSeek Coder V2 [专业级] - Great for coding
+  需要信用卡: 无需信用卡
+  备注: 100% FREE - runs on your hardware!
+```
+
+### 仅显示有免费专业级模型的工具
+
+```bash
+vcm free --pro
+```
+
+### 最佳免费选择
+
+| 工具 | 免费额度 | 专业级模型 | 需要信用卡 |
+|-----|---------|-----------|-----------|
+| **Gemini CLI** | 100 次/天 | Gemini 2.5 Pro, Gemini 3 Pro | 否 |
+| **Ollama** | 无限本地运行 | Qwen2.5-Coder, DeepSeek Coder | 否 |
+| **Aider** | BYOK/本地 | Qwen3-Coder (OpenRouter) | 否 |
+| **Kiro** | 50 积分/月 | Claude 4 Sonnet | 否 |
+| **OpenCode** | BYOK | Gemini 2.5 Pro, Qwen3-Coder | 否 |
+| **Kilo Code** | $25 注册积分 | Claude Opus 4.5, GPT-4.1 | 是 |
+
+### 什么是专业级模型？
+
+在 **SWE-bench Verified** 测试中得分 **≥60%** 的模型被认为是专业级模型：
+
+| 模型 | SWE-bench | 供应商 |
+|-----|-----------|-------|
+| Claude Opus 4.5 | 80.9% | Anthropic |
+| GPT-5.1-Codex-Max | 77.9% | OpenAI |
+| Gemini 3 Pro | 76.2% | Google |
+| Gemini 2.5 Pro | 63.2% | Google |
+| Qwen3-Coder-480B | 69.6% | Alibaba |
 
 ---
 
