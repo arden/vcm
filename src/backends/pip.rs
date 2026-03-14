@@ -1,6 +1,7 @@
 //! pip 后端
 
 use crate::models::installer::Backend;
+use crate::i18n::translate;
 use anyhow::{bail, Result};
 
 pub struct PipBackend;
@@ -22,7 +23,7 @@ impl Backend for PipBackend {
             .status()?;
 
         if !status.success() {
-            bail!("pip install 失败");
+            bail!("{}", translate("backend.pip_install_failed"));
         }
         Ok(())
     }
@@ -35,7 +36,7 @@ impl Backend for PipBackend {
             .status()?;
 
         if !status.success() {
-            bail!("pip update 失败");
+            bail!("{}", translate("backend.pip_update_failed"));
         }
         Ok(())
     }
@@ -48,7 +49,7 @@ impl Backend for PipBackend {
             .status()?;
 
         if !status.success() {
-            bail!("pip uninstall 失败");
+            bail!("{}", translate("backend.pip_remove_failed"));
         }
         Ok(())
     }

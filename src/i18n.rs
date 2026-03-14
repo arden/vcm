@@ -301,6 +301,7 @@ fn get_en_translations() -> &'static std::collections::HashMap<&'static str, &'s
         // Import 命令
         m.insert("import.importing", "Importing tools list from file...");
         m.insert("import.file_info", "Import file info:");
+        m.insert("import.exported_at", "Exported at");
         m.insert("import.source_host", "Source host");
         m.insert("import.tool_count", "Tool count");
         m.insert("import.to_install", "To install ({} tools):");
@@ -372,6 +373,22 @@ fn get_en_translations() -> &'static std::collections::HashMap<&'static str, &'s
         m.insert("pricing.models_available", "Models available");
         m.insert("pricing.pro_grade", "Pro-Grade");
         m.insert("pricing.note", "Note");
+        
+        // 后端错误消息
+        m.insert("backend.npm_install_failed", "npm install failed");
+        m.insert("backend.pip_install_failed", "pip install failed");
+        m.insert("backend.pipx_install_failed", "pipx install failed");
+        m.insert("backend.cargo_install_failed", "cargo install failed");
+        m.insert("backend.brew_install_failed", "brew install failed");
+        m.insert("backend.go_install_failed", "go install failed");
+        m.insert("backend.npm_update_failed", "npm update failed");
+        m.insert("backend.pip_update_failed", "pip update failed");
+        m.insert("backend.cargo_update_failed", "cargo update failed");
+        m.insert("backend.brew_update_failed", "brew update failed");
+        m.insert("backend.npm_remove_failed", "npm uninstall failed");
+        m.insert("backend.pip_remove_failed", "pip uninstall failed");
+        m.insert("backend.cargo_remove_failed", "cargo uninstall failed");
+        m.insert("backend.brew_remove_failed", "brew uninstall failed");
         
         m
     })
@@ -594,6 +611,7 @@ fn get_zh_translations() -> &'static std::collections::HashMap<&'static str, &'s
         // Import 命令
         m.insert("import.importing", "从文件导入工具列表...");
         m.insert("import.file_info", "导入文件信息:");
+        m.insert("import.exported_at", "导出时间");
         m.insert("import.source_host", "来源主机");
         m.insert("import.tool_count", "工具数量");
         m.insert("import.to_install", "待安装 ({} 个):");
@@ -665,6 +683,22 @@ fn get_zh_translations() -> &'static std::collections::HashMap<&'static str, &'s
         m.insert("pricing.models_available", "可用模型");
         m.insert("pricing.pro_grade", "专业级");
         m.insert("pricing.note", "备注");
+        
+        // 后端错误消息
+        m.insert("backend.npm_install_failed", "npm 安装失败");
+        m.insert("backend.pip_install_failed", "pip 安装失败");
+        m.insert("backend.pipx_install_failed", "pipx 安装失败");
+        m.insert("backend.cargo_install_failed", "cargo 安装失败");
+        m.insert("backend.brew_install_failed", "brew 安装失败");
+        m.insert("backend.go_install_failed", "go 安装失败");
+        m.insert("backend.npm_update_failed", "npm 更新失败");
+        m.insert("backend.pip_update_failed", "pip 更新失败");
+        m.insert("backend.cargo_update_failed", "cargo 更新失败");
+        m.insert("backend.brew_update_failed", "brew 更新失败");
+        m.insert("backend.npm_remove_failed", "npm 卸载失败");
+        m.insert("backend.pip_remove_failed", "pip 卸载失败");
+        m.insert("backend.cargo_remove_failed", "cargo 卸载失败");
+        m.insert("backend.brew_remove_failed", "brew 卸载失败");
         
         m
     })

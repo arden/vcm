@@ -1,6 +1,7 @@
 //! npm 后端
 
 use crate::models::installer::Backend;
+use crate::i18n::translate;
 use anyhow::{bail, Result};
 
 pub struct NpmBackend;
@@ -20,7 +21,7 @@ impl Backend for NpmBackend {
             .status()?;
 
         if !status.success() {
-            bail!("npm install 失败");
+            bail!("{}", translate("backend.npm_install_failed"));
         }
         Ok(())
     }
@@ -31,7 +32,7 @@ impl Backend for NpmBackend {
             .status()?;
 
         if !status.success() {
-            bail!("npm update 失败");
+            bail!("{}", translate("backend.npm_update_failed"));
         }
         Ok(())
     }
@@ -42,7 +43,7 @@ impl Backend for NpmBackend {
             .status()?;
 
         if !status.success() {
-            bail!("npm uninstall 失败");
+            bail!("{}", translate("backend.npm_remove_failed"));
         }
         Ok(())
     }

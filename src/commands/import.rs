@@ -1,8 +1,7 @@
 //! import 命令实现 - 从文件导入工具列表
 
-use crate::commands::export::{ExportData, ExportedTool};
+use crate::commands::export::ExportData;
 use crate::core::Registry;
-use crate::models::*;
 use crate::i18n::translate;
 use anyhow::{bail, Result};
 use console::style;
@@ -32,7 +31,7 @@ impl ImportCommand {
 
         println!("{}:", translate("import.file_info"));
         println!("  {}: {}", translate("label.version"), export_data.version);
-        println!("  {}: {}", translate("import.exported_at").split(':').next().unwrap_or("Exported at"), export_data.exported_at);
+        println!("  {}: {}", translate("import.exported_at"), export_data.exported_at);
         if let Some(ref hostname) = export_data.hostname {
             println!("  {}: {}", translate("import.source_host"), hostname);
         }
@@ -74,14 +73,38 @@ impl ImportCommand {
             println!();
 
             if self.install {
+                let mut success = 0;
+                let mut failed = 0;
+                
                 println!("{}...", translate("import.start_install"));
+                
                 for tool in &to_install {
                     if let Some(tool_def) = registry.find_by_id(&tool.id) {
-                        println!("\n{} {}", style("📦").dim(), translate("install.installing").replace("{}", &tool_def.name));
-                        // 这里可以调用安装逻辑
-                        println!("  {}: vcm install {}", translate("run.launching").split("...").next().unwrap_or("Run"), tool.id);
+                        println!("\n{} {}", style("📦").dim(), translate("install.installing").replace("{}", &style(&tool_def.name).cyan().bold().to_string()));
+                        
+                        // 调用 vcm install 执行实际安装
+                        let result = self.install_tool(&tool.id);
+                        
+                        match result {
+                            Ok(_) => {
+                                println!("{} {}", style("✓").green(), translate("install.success").replace("{}", &tool_def.name));
+                                success += 1;
+                            }
+                            Err(e) => {
+                                println!("{} {} - {}", style("✗").red(), translate("install.failed").replace("{}", &tool_def.name), e);
+                                failed += 1;
+                            }
+                        }
                     }
                 }
+                
+                println!("\n{}: {} {}, {} {}",
+                    translate("update.complete"),
+                    style(success).green(),
+                    translate("msg.success").to_lowercase(),
+                    style(failed).red(),
+                    translate("msg.failed").to_lowercase()
+                );
             } else {
                 println!("{}", translate("import.hint").replace("{}", &style("--install").cyan().to_string()));
             }
@@ -90,5 +113,23 @@ impl ImportCommand {
         }
 
         Ok(())
+    }
+    
+    /// 执行工具安装
+    fn install_tool(&self, tool_id: &str) -> Result<()> {
+        // 获取当前可执行文件路径
+        let vcm_path = std::env::current_exe()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_else(|_| "vcm".to_string());
+        
+        let status = std::process::Command::new(&vcm_path)
+            .args(["install", tool_id])
+            .status()?;
+        
+        if status.success() {
+            Ok(())
+        } else {
+            bail!("{}", translate("install.failed").replace("{}", tool_id))
+        }
     }
 }
