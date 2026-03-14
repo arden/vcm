@@ -1,0 +1,655 @@
+# VCM Tool Registry
+# CLI AI 编程工具注册表
+
+version: 1
+updated: "2025-03-14"
+source: https://github.com/arden/vcm
+
+tools:
+  # === Anthropic ===
+  - id: claude-code
+    name: Claude Code
+    vendor: Anthropic
+    description: |
+      终端 AI 编程助手，具备强大的推理能力。
+      支持代码编辑、调试、重构等多种编程任务。
+    website: https://claude.ai
+    repository: https://github.com/anthropics/claude-code
+    executables:
+      - claude
+      - claude-code
+    install_methods:
+      - manager: npm
+        package: "@anthropic-ai/claude-code"
+    config_paths:
+      - ~/.claude
+      - ~/.config/claude
+    env_vars:
+      - name: ANTHROPIC_API_KEY
+        description: Anthropic API Key
+        required: true
+        get_url: https://console.anthropic.com
+    tags:
+      - ai
+      - coding
+      - cli
+      - llm
+      - anthropic
+    is_cli: true
+    is_gui: false
+    featured: true
+
+  # === Open Source ===
+  - id: aider
+    name: Aider
+    vendor: Open Source
+    description: |
+      开源 AI 结对编程工具，支持多种 LLM 后端。
+      可以在终端中与 AI 协作编写和修改代码。
+    website: https://aider.chat
+    repository: https://github.com/paul-gauthier/aider
+    executables:
+      - aider
+    install_methods:
+      - manager: pip
+        package: aider-chat
+      - manager: pipx
+        package: aider-chat
+    config_paths:
+      - ~/.aider.conf.yml
+    env_vars:
+      - name: OPENAI_API_KEY
+        description: OpenAI API Key
+        required: false
+        get_url: https://platform.openai.com/api-keys
+      - name: ANTHROPIC_API_KEY
+        description: Anthropic API Key
+        required: false
+        get_url: https://console.anthropic.com
+    tags:
+      - ai
+      - coding
+      - cli
+      - opensource
+    is_cli: true
+    is_gui: false
+    featured: true
+
+  # === GitHub ===
+  - id: copilot-cli
+    name: GitHub Copilot CLI
+    vendor: GitHub/Microsoft
+    description: |
+      GitHub 官方终端 AI 编程助手。
+      支持 shell 命令生成、代码解释、Git 操作辅助。
+    website: https://github.com/features/copilot/cli
+    repository: https://github.com/github/copilot-cli
+    executables:
+      - github-copilot
+      - gh
+    install_methods:
+      - manager: npm
+        package: "@github/copilot"
+    config_paths:
+      - ~/.config/github-copilot
+    env_vars:
+      - name: GITHUB_TOKEN
+        description: GitHub Personal Access Token
+        required: true
+        get_url: https://github.com/settings/tokens
+    tags:
+      - ai
+      - coding
+      - cli
+      - github
+    is_cli: true
+    is_gui: false
+    featured: true
+
+  # === Google ===
+  - id: gemini-cli
+    name: Gemini CLI
+    vendor: Google
+    description: |
+      Google 开源终端 AI 代理。
+      支持多模态输入，提供免费使用额度。
+    website: https://ai.google.dev
+    repository: https://github.com/google-gemini/gemini-cli
+    executables:
+      - gemini
+      - gemini-cli
+    install_methods:
+      - manager: npm
+        package: "@google/gemini-cli"
+    config_paths:
+      - ~/.config/gemini
+    env_vars:
+      - name: GOOGLE_API_KEY
+        description: Google API Key
+        required: true
+        get_url: https://ai.google.dev/api-key
+    tags:
+      - ai
+      - coding
+      - cli
+      - google
+    is_cli: true
+    is_gui: false
+    featured: true
+
+  # === Cursor ===
+  - id: cursor
+    name: Cursor
+    vendor: Cursor Inc.
+    description: |
+      AI 驱动的代码编辑器，基于 VS Code。
+      深度集成 AI 能力，支持代码补全和对话。
+    website: https://cursor.sh
+    executables:
+      - cursor
+    install_methods:
+      - manager: brew
+        package: cursor
+        platforms: [macos]
+      - manager: scoop
+        package: cursor
+        platforms: [windows]
+    config_paths:
+      - ~/.cursor
+    tags:
+      - ai
+      - coding
+      - editor
+    is_cli: false
+    is_gui: true
+    featured: true
+
+  # === Windsurf ===
+  - id: windsurf
+    name: Windsurf
+    vendor: Codeium
+    description: |
+      企业级 AI 代码编辑器。
+      适合大型项目和团队协作。
+    website: https://codeium.com/windsurf
+    executables:
+      - windsurf
+    install_methods:
+      - manager: brew
+        package: windsurf
+        platforms: [macos]
+    config_paths:
+      - ~/.windsurf
+    tags:
+      - ai
+      - coding
+      - editor
+      - enterprise
+    is_cli: false
+    is_gui: true
+
+  # === Ollama ===
+  - id: ollama
+    name: Ollama
+    vendor: Open Source
+    description: |
+      本地运行大语言模型。
+      支持 Llama、Mistral、Qwen 等开源模型。
+    website: https://ollama.ai
+    repository: https://github.com/ollama/ollama
+    executables:
+      - ollama
+    install_methods:
+      - manager: brew
+        package: ollama
+        platforms: [macos, linux]
+      - manager: script
+        package: https://ollama.ai/install.sh
+        platforms: [linux, macos]
+    config_paths:
+      - ~/.ollama
+    tags:
+      - ai
+      - llm
+      - local
+      - opensource
+    is_cli: true
+    is_gui: false
+
+  # === Sourcegraph ===
+  - id: amp
+    name: Amp
+    vendor: Sourcegraph
+    description: |
+      Sourcegraph AI 代码助手。
+      支持代码搜索和智能补全。
+    website: https://sourcegraph.com
+    executables:
+      - amp
+    install_methods:
+      - manager: npm
+        package: "@sourcegraph/amp"
+    config_paths:
+      - ~/.amp
+    tags:
+      - ai
+      - coding
+      - cli
+    is_cli: true
+    is_gui: false
+
+  # === OpenAI ===
+  - id: openai-cli
+    name: OpenAI CLI
+    vendor: OpenAI
+    description: |
+      OpenAI 官方命令行工具。
+      直接调用 GPT 系列模型。
+    website: https://openai.com
+    repository: https://github.com/openai/openai-cli
+    executables:
+      - openai
+    install_methods:
+      - manager: pip
+        package: openai
+      - manager: pipx
+        package: openai
+    config_paths:
+      - ~/.openai
+    env_vars:
+      - name: OPENAI_API_KEY
+        description: OpenAI API Key
+        required: true
+        get_url: https://platform.openai.com/api-keys
+    tags:
+      - ai
+      - llm
+      - cli
+      - openai
+    is_cli: true
+    is_gui: false
+
+  # === Continue ===
+  - id: continue
+    name: Continue
+    vendor: Continue Dev
+    description: |
+      开源 AI 代码助手扩展。
+      支持 VS Code 和 JetBrains。
+    website: https://continue.dev
+    repository: https://github.com/continuedev/continue
+    executables:
+      - continue
+    tags:
+      - ai
+      - coding
+      - extension
+      - opensource
+    is_cli: false
+    is_gui: false
+
+  # === v0 ===
+  - id: v0
+    name: v0 by Vercel
+    vendor: Vercel
+    description: |
+      AI UI 组件生成器。
+      专注于 React/Next.js 组件开发。
+    website: https://v0.dev
+    executables:
+      - v0
+    install_methods:
+      - manager: npm
+        package: v0
+    config_paths:
+      - ~/.v0
+    env_vars:
+      - name: VERCEL_API_KEY
+        description: Vercel API Key
+        required: true
+        get_url: https://vercel.com/account/tokens
+    tags:
+      - ai
+      - ui
+      - react
+      - nextjs
+    is_cli: false
+    is_gui: false
+
+  # === Bolt.new ===
+  - id: bolt-new
+    name: Bolt.new
+    vendor: StackBlitz
+    description: |
+      快速原型开发工具。
+      支持多框架快速迭代。
+    website: https://bolt.new
+    tags:
+      - ai
+      - prototype
+      - web
+    is_cli: false
+    is_gui: false
+
+  # === Replit ===
+  - id: replit
+    name: Replit AI
+    vendor: Replit
+    description: |
+      在线 AI 编程环境。
+      支持多种编程语言。
+    website: https://replit.com
+    executables:
+      - replit
+    install_methods:
+      - manager: npm
+        package: replit
+    tags:
+      - ai
+      - coding
+      - cloud
+    is_cli: true
+    is_gui: false
+
+  # === Amazon ===
+  - id: codewhisperer
+    name: CodeWhisperer
+    vendor: Amazon
+    description: |
+      Amazon AI 代码助手。
+      集成 AWS 生态。
+    website: https://aws.amazon.com/codewhisperer
+    tags:
+      - ai
+      - coding
+      - aws
+    is_cli: false
+    is_gui: false
+
+  # === Tabnine ===
+  - id: tabnine
+    name: Tabnine
+    vendor: Tabnine
+    description: |
+      AI 代码补全工具。
+      支持本地模型和云模型。
+    website: https://tabnine.com
+    tags:
+      - ai
+      - coding
+      - completion
+    is_cli: false
+    is_gui: false
+
+  # === Codeium ===
+  - id: codeium
+    name: Codeium
+    vendor: Codeium
+    description: |
+      免费AI代码补全工具。
+      支持多种编辑器。
+    website: https://codeium.com
+    executables:
+      - codeium
+    tags:
+      - ai
+      - coding
+      - completion
+      - free
+    is_cli: false
+    is_gui: false
+
+  # === Kiro ===
+  - id: kiro
+    name: Kiro
+    vendor: Amazon
+    description: |
+      Amazon 推出的 AI 编程代理。
+      支持完整开发流程。
+    website: https://kiro.dev
+    executables:
+      - kiro
+    install_methods:
+      - manager: npm
+        package: "@anthropic-ai/kiro"
+    config_paths:
+      - ~/.kiro
+    tags:
+      - ai
+      - coding
+      - cli
+      - amazon
+    is_cli: true
+    is_gui: false
+
+  # === iFlow CLI ===
+  - id: iflow
+    name: iFlow CLI
+    vendor: Open Source
+    description: |
+      心流 CLI，AI 编程助手。
+      专注中文开发体验。
+    website: https://github.com/iflow-cli/iflow
+    executables:
+      - iflow
+    install_methods:
+      - manager: npm
+        package: "iflow-cli"
+    tags:
+      - ai
+      - coding
+      - cli
+      - chinese
+    is_cli: true
+    is_gui: false
+
+  # === OpenCode ===
+  - id: opencode
+    name: OpenCode
+    vendor: Open Source
+    description: |
+      开源终端 AI 编程工具。
+      支持 75+ LLM 提供商。
+    website: https://github.com/opencode-ai/opencode
+    repository: https://github.com/opencode-ai/opencode
+    executables:
+      - opencode
+    install_methods:
+      - manager: npm
+        package: "opencode-ai"
+      - manager: go
+        package: "github.com/opencode-ai/opencode@latest"
+    config_paths:
+      - ~/.config/opencode
+    tags:
+      - ai
+      - coding
+      - cli
+      - opensource
+    is_cli: true
+    is_gui: false
+    featured: true
+
+  # === Auggie ===
+  - id: auggie
+    name: Augment Code
+    vendor: Augment
+    description: |
+      企业级 AI 代码助手。
+      支持大型代码库理解。
+    website: https://augmentcode.com
+    executables:
+      - auggie
+      - augment
+    install_methods:
+      - manager: npm
+        package: "@augmentcode/auggie"
+    config_paths:
+      - ~/.augment
+    env_vars:
+      - name: AUGMENT_API_KEY
+        description: Augment API Key
+        required: true
+    tags:
+      - ai
+      - coding
+      - cli
+      - enterprise
+    is_cli: true
+    is_gui: false
+
+  # === Pieces ===
+  - id: pieces
+    name: Pieces
+    vendor: Pieces for Developers
+    description: |
+      AI 代码片段管理工具。
+      支持代码搜索和重用。
+    website: https://pieces.app
+    executables:
+      - pieces
+    install_methods:
+      - manager: brew
+        package: pieces
+        platforms: [macos]
+    tags:
+      - ai
+      - snippet
+      - management
+    is_cli: true
+    is_gui: false
+
+  # === Sourcegraph Cody ===
+  - id: cody
+    name: Cody
+    vendor: Sourcegraph
+    description: |
+      Sourcegraph AI 代码助手。
+      支持代码理解和生成。
+    website: https://sourcegraph.com/cody
+    executables:
+      - cody
+    install_methods:
+      - manager: npm
+        package: "@sourcegraph/cody"
+    config_paths:
+      - ~/.config/cody
+    tags:
+      - ai
+      - coding
+      - cli
+    is_cli: true
+    is_gui: false
+
+  # === Goose ===
+  - id: goose
+    name: Goose
+    vendor: Block
+    description: |
+      开源 AI 编程代理。
+      自动化开发任务。
+    website: https://github.com/block/goose
+    repository: https://github.com/block/goose
+    executables:
+      - goose
+    install_methods:
+      - manager: pip
+        package: "goose-ai"
+      - manager: pipx
+        package: "goose-ai"
+    config_paths:
+      - ~/.config/goose
+    tags:
+      - ai
+      - coding
+      - cli
+      - agent
+      - opensource
+    is_cli: true
+    is_gui: false
+
+  # === Devin CLI ===
+  - id: devin
+    name: Devin CLI
+    vendor: Cognition
+    description: |
+      Devin AI 软件工程师命令行工具。
+      自主完成复杂开发任务。
+    website: https://devin.ai
+    executables:
+      - devin
+    config_paths:
+      - ~/.devin
+    tags:
+      - ai
+      - coding
+      - cli
+      - agent
+    is_cli: true
+    is_gui: false
+
+  # === Rabbit ===
+  - id: rabbit-code
+    name: Rabbit Code
+    vendor: Open Source
+    description: |
+      快速代码生成工具。
+      支持多语言。
+    website: https://github.com/rabbit-code/rabbit
+    executables:
+      - rabbit
+    tags:
+      - ai
+      - coding
+      - cli
+    is_cli: true
+    is_gui: false
+
+  # === Mentat ===
+  - id: mentat
+    name: Mentat
+    vendor: Open Source
+    description: |
+      AI 辅助编程工具。
+      自动化代码修改。
+    website: https://github.com/AbanteAI/mentat
+    repository: https://github.com/AbanteAI/mentat
+    executables:
+      - mentat
+    install_methods:
+      - manager: pip
+        package: "mentat"
+      - manager: pipx
+        package: "mentat"
+    env_vars:
+      - name: OPENAI_API_KEY
+        description: OpenAI API Key
+        required: true
+    tags:
+      - ai
+      - coding
+      - cli
+      - opensource
+    is_cli: true
+    is_gui: false
+
+  # === Sweep ===
+  - id: sweep
+    name: Sweep
+    vendor: Sweep AI
+    description: |
+      AI 驱动的代码搜索和修改工具。
+      支持 GitHub 集成。
+    website: https://sweep.dev
+    executables:
+      - sweep
+    install_methods:
+      - manager: pip
+        package: "sweepai"
+    tags:
+      - ai
+      - coding
+      - cli
+      - github
+    is_cli: true
+    is_gui: false

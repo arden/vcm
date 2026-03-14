@@ -1,0 +1,43 @@
+//! 命令模块
+
+pub mod scan;
+pub mod list;
+pub mod install;
+pub mod status;
+pub mod config;
+pub mod search;
+pub mod info;
+pub mod doctor;
+pub mod update;
+pub mod remove;
+pub mod update_registry;
+pub mod completions;
+pub mod outdated;
+pub mod export;
+pub mod import;
+pub mod init;
+pub mod usage;
+pub mod run;
+pub mod default;
+pub mod lang;
+
+pub use scan::ScanCommand;
+pub use list::ListCommand;
+pub use install::InstallCommand;
+pub use status::StatusCommand;
+pub use config::ConfigCommand;
+pub use search::SearchCommand;
+pub use info::InfoCommand;
+pub use doctor::DoctorCommand;
+pub use update::UpdateCommand;
+pub use remove::RemoveCommand;
+pub use update_registry::UpdateRegistryCommand;
+pub use completions::CompletionsCommand;
+pub use outdated::OutdatedCommand;
+pub use export::ExportCommand;
+pub use import::ImportCommand;
+pub use init::InitCommand;
+pub use usage::UsageCommand;
+pub use run::RunCommand;
+pub use default::DefaultCommand;
+pub use lang::LangCommand;

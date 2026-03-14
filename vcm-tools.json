@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "exported_at": "2026-03-14T17:39:16.747382293+08:00",
+  "hostname": "tujiao",
+  "tools": [
+    {
+      "id": "claude-code",
+      "name": "Claude Code",
+      "version": "2.1.19",
+      "configured": false
+    },
+    {
+      "id": "cursor",
+      "name": "Cursor",
+      "version": "2.6.19",
+      "configured": true
+    },
+    {
+      "id": "amp",
+      "name": "Amp",
+      "version": "0.0.1773173082-gfe7cc2",
+      "configured": true
+    },
+    {
+      "id": "kiro",
+      "name": "Kiro",
+      "version": "0.10.78",
+      "configured": true
+    },
+    {
+      "id": "iflow",
+      "name": "iFlow CLI",
+      "version": "0.5.17",
+      "configured": true
+    },
+    {
+      "id": "opencode",
+      "name": "OpenCode",
+      "version": "1.2.21",
+      "configured": true
+    },
+    {
+      "id": "auggie",
+      "name": "Augment Code",
+      "version": "0.19.0",
+      "configured": false
+    }
+  ]
+}

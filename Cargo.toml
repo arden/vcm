@@ -1,0 +1,65 @@
+[package]
+name = "vcm"
+version = "0.1.0"
+edition = "2021"
+authors = ["Arden"]
+description = "Vibe Coding Manager - CLI AI编程工具管理器"
+license = "MIT"
+repository = "https://github.com/arden/vcm"
+keywords = ["cli", "ai", "coding", "manager", "tools"]
+categories = ["command-line-utilities", "development-tools"]
+
+[[bin]]
+name = "vcm"
+path = "src/main.rs"
+
+[dependencies]
+# CLI
+clap = { version = "4", features = ["derive", "color", "suggestions"] }
+clap_complete = "4"
+
+# 序列化
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+serde_json = "1"
+toml = "0.8"
+
+# 异步
+tokio = { version = "1", features = ["full"] }
+
+# 终端UI
+dialoguer = "0.11"
+console = "0.15"
+indicatif = "0.17"
+
+# 工具
+which = "7"
+dirs = "6"
+
+# 网络
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+
+# 错误处理
+anyhow = "1"
+thiserror = "2"
+
+# 日志
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# 时间
+chrono = { version = "0.4", features = ["serde"] }
+
+# 系统信息
+hostname = "0.4"
+
+[dev-dependencies]
+tempfile = "3"
+assert_cmd = "2"
+predicates = "3"
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
