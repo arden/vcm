@@ -87,7 +87,8 @@ impl ScanCommand {
             style(&status_icon).green()
         };
 
-        let version = tool.version.as_deref().unwrap_or(&translate("msg.unknown_version"));
+        let unknown_version = translate("msg.unknown_version");
+        let version = tool.version.as_deref().unwrap_or(&unknown_version);
         let version_str = style(format!("v{}", version)).dim();
 
         print!("{}{} ", status_style, style(&tool.tool_name).bold());

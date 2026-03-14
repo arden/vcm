@@ -2,6 +2,7 @@
 
 use crate::core::{Discovery, Registry};
 use crate::models::*;
+use crate::i18n::translate;
 use anyhow::Result;
 use console::style;
 use dialoguer::{Input, MultiSelect, Select};
@@ -18,17 +19,17 @@ impl InitCommand {
         self.print_welcome();
 
         // 步骤1: 扫描已安装工具
-        println!("\n{}", style("步骤 1/3: 扫描已安装工具").cyan().bold());
+        println!("\n{}", style(translate("init.step1")).cyan().bold());
         let registry = Registry::load()?;
         let discovery = Discovery::new(Registry::load()?);
         let installed = discovery.scan();
 
         if installed.is_empty() {
-            println!("{} 未发现已安装的 CLI AI 工具", style("○").yellow());
+            println!("{} {}", style("○").yellow(), translate("scan.none"));
         } else {
-            println!("{} 发现 {} 个已安装工具", 
-                style("✓").green(), 
-                style(installed.len()).cyan()
+            println!("{} {}",
+                style("✓").green(),
+                translate("init.found_installed").replace("{}", &style(installed.len()).cyan().to_string())
             );
             for tool in &installed {
                 println!("  {} {} ({})", style("✓").green(), tool.tool_name, tool.tool_id);
@@ -36,33 +37,33 @@ impl InitCommand {
         }
 
         // 步骤2: 选择要安装的工具
-        println!("\n{}", style("步骤 2/3: 选择要安装的工具").cyan().bold());
+        println!("\n{}", style(translate("init.step2")).cyan().bold());
         
         let not_installed: Vec<&Tool> = registry.tools.iter()
             .filter(|t| !t.is_installed())
             .collect();
 
         if not_installed.is_empty() {
-            println!("{} 所有工具都已安装", style("✓").green());
+            println!("{} {}", style("✓").green(), translate("init.all_installed"));
         } else {
             let items: Vec<String> = not_installed.iter()
                 .map(|t| format!("{} - {}", t.name, t.description.lines().next().unwrap_or("")))
                 .collect();
 
             let selections = MultiSelect::new()
-                .with_prompt("选择要安装的工具 (空格选择，回车确认)")
+                .with_prompt(&translate("init.select_tools"))
                 .items(&items)
                 .interact()?;
 
             if !selections.is_empty() {
-                println!("\n{} 将安装以下工具:", style("📦").dim());
+                println!("\n{}:", translate("init.will_install"));
                 for idx in &selections {
                     let tool = not_installed[*idx];
                     println!("  {} {}", style("•").dim(), tool.name);
                 }
 
                 // 步骤3: 配置 API Key
-                println!("\n{}", style("步骤 3/3: 配置 API Key").cyan().bold());
+                println!("\n{}", style(translate("init.step3")).cyan().bold());
                 self.configure_api_keys(&selections, &not_installed)?;
             }
         }
@@ -79,12 +80,12 @@ impl InitCommand {
         println!("║                                                           ║");
         println!("║   {} - Vibe Coding Manager                    ║", style("VCM").cyan().bold());
         println!("║                                                           ║");
-        println!("║   CLI AI 编程工具管理器                                   ║");
+        println!("║   {}                                                    ║", translate("app.description"));
         println!("║                                                           ║");
         println!("╚═══════════════════════════════════════════════════════════╝");
         println!();
-        println!("欢迎使用 VCM 初始化向导!");
-        println!("这个向导将帮助你设置 CLI AI 编程环境。");
+        println!("{}", translate("init.welcome"));
+        println!("{}", translate("init.welcome_desc"));
     }
 
     fn configure_api_keys(&self, selections: &[usize], tools: &[&Tool]) -> Result<()> {
@@ -100,24 +101,25 @@ impl InitCommand {
         }
 
         if api_keys.is_empty() {
-            println!("{} 选中的工具不需要配置 API Key", style("○").dim());
+            println!("{} {}", style("○").dim(), translate("init.no_api_key"));
             return Ok(());
         }
 
-        println!("以下 API Key 需要配置:");
+        println!("{}:", translate("init.need_api_key"));
         for (_, desc) in &api_keys {
             println!("  {} {}", style("•").dim(), desc);
         }
 
+        let options = vec![translate("init.yes_configure"), translate("init.later")];
         let configure = Select::new()
-            .with_prompt("是否现在配置 API Key?")
-            .items(&["是，现在配置", "稍后配置"])
+            .with_prompt(&translate("init.configure_now"))
+            .items(&options)
             .interact()?;
 
         if configure == 0 {
             for (key_name, _desc) in &api_keys {
                 let key: String = Input::new()
-                    .with_prompt(&format!("输入 {}", key_name))
+                    .with_prompt(&translate("init.input").replace("{}", key_name))
                     .interact()?;
                 
                 if !key.is_empty() {
@@ -127,7 +129,7 @@ impl InitCommand {
                     } else {
                         format!("{}...", key)
                     };
-                    println!("{} 添加到你的 shell 配置文件:", style("提示:").yellow());
+                    println!("{} {}", style(translate("label.hint")).yellow(), translate("init.add_to_shell"));
                     println!("  export {}=\"{}\"", key_name, masked);
                 }
             }
@@ -140,15 +142,15 @@ impl InitCommand {
         println!();
         println!("╔═══════════════════════════════════════════════════════════╗");
         println!("║                                                           ║");
-        println!("║   {} 初始化完成!                              ║", style("✓").green().bold());
+        println!("║   {} {}                                  ║", style("✓").green().bold(), translate("init.complete"));
         println!("║                                                           ║");
         println!("╚═══════════════════════════════════════════════════════════╝");
         println!();
-        println!("下一步:");
-        println!("  {} 安装工具: {}", style("•").dim(), style("vcm install <tool>").cyan());
-        println!("  {} 查看状态: {}", style("•").dim(), style("vcm status").cyan());
-        println!("  {} 配置工具: {}", style("•").dim(), style("vcm config <tool>").cyan());
-        println!("  {} 检查更新: {}", style("•").dim(), style("vcm outdated").cyan());
+        println!("{}:", translate("init.next_steps"));
+        println!("  {} {}", style("•").dim(), translate("init.install_tools").replace("{}", &style("vcm install <tool>").cyan().to_string()));
+        println!("  {} {}", style("•").dim(), translate("init.view_status").replace("{}", &style("vcm status").cyan().to_string()));
+        println!("  {} {}", style("•").dim(), translate("init.configure_tools").replace("{}", &style("vcm config <tool>").cyan().to_string()));
+        println!("  {} {}", style("•").dim(), translate("init.check_updates").replace("{}", &style("vcm outdated").cyan().to_string()));
         println!();
     }
 }

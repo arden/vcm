@@ -2,6 +2,7 @@
 
 use crate::core::Registry;
 use crate::models::*;
+use crate::i18n::translate;
 use anyhow::Result;
 use console::style;
 use std::collections::HashSet;
@@ -72,9 +73,9 @@ impl ListCommand {
         let total = tools.len();
         let installed_count = installed_ids.len();
 
-        println!("{} CLI AI 编程工具 (共 {} 个)\n",
+        println!("{} {}\n",
             style("📋").dim(),
-            style(total).cyan().bold()
+            translate("list.title").replace("{}", &format!("{}", style(total).cyan().bold()))
         );
 
         // 已安装工具
@@ -83,7 +84,7 @@ impl ListCommand {
             .collect();
         
         if !installed_tools.is_empty() {
-            println!("{}", style("已安装").green().bold());
+            println!("{}", style(translate("list.installed")).green().bold());
             for tool in &installed_tools {
                 self.print_tool(tool, true);
             }
@@ -96,7 +97,7 @@ impl ListCommand {
             .collect();
 
         if !featured.is_empty() {
-            println!("{}", style("热门推荐").cyan().bold());
+            println!("{}", style(translate("list.recommended")).cyan().bold());
             for tool in &featured {
                 self.print_tool(tool, false);
             }
@@ -134,7 +135,7 @@ impl ListCommand {
 
         for (tag, tag_tools) in sorted_groups {
             if tag_tools.len() >= 2 {
-                println!("{} {}", style("标签:").dim(), style(&tag).yellow().bold());
+                println!("{} {}", style(&format!("{}:", translate("label.tag"))).dim(), style(&tag).yellow().bold());
                 for tool in &tag_tools {
                     self.print_tool(tool, false);
                 }
@@ -177,18 +178,16 @@ impl ListCommand {
         };
 
         println!("┌─────────────────────────────────────┐");
-        println!("│ {:<35} │", format!("已安装: {} / {} ({}%)", 
-            installed_count, 
-            total, 
-            percentage
-        ));
-        println!("│ {:<35} │", format!("可安装: {} 个工具", available));
+        println!("│ {:<35} │", translate("list.summary")
+            .replace("{}", &format!("{}", installed_count))
+            .replace("{total}", &format!("{}", total))
+            .replace("{percent}", &format!("{}", percentage))
+        );
+        println!("│ {:<35} │", translate("list.available").replace("{}", &format!("{}", available)));
         println!("└─────────────────────────────────────┘");
 
         if available > 0 {
-            println!("\n提示: 运行 {} 安装新工具", 
-                style("vcm install <tool>").cyan()
-            );
+            println!("\n{}: {}", translate("label.hint"), translate("hint.install"));
         }
     }
 }

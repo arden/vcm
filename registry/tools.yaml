@@ -541,6 +541,32 @@ tools:
     is_cli: true
     is_gui: false
 
+  # === Kilo Code ===
+  - id: kilo
+    name: Kilo Code
+    vendor: Kilo
+    description: |
+      开源 AI 编程代理，支持代码生成、自动补全和终端命令执行。
+      可从自然语言生成代码，自动化开发任务。
+    website: https://kilo.ai
+    repository: https://github.com/Kilo-Org/kilocode
+    executables:
+      - kilo
+    install_methods:
+      - manager: npm
+        package: "@kilocode/cli"
+    config_paths:
+      - ~/.kilo
+    tags:
+      - ai
+      - coding
+      - cli
+      - agent
+      - opensource
+    is_cli: true
+    is_gui: false
+    featured: true
+
   # === Goose ===
   - id: goose
     name: Goose

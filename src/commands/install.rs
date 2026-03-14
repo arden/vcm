@@ -2,6 +2,7 @@
 
 use crate::core::Registry;
 use crate::models::*;
+use crate::i18n::translate;
 use anyhow::{bail, Result};
 use console::style;
 use indicatif::{ProgressBar, ProgressStyle};
@@ -26,35 +27,36 @@ impl InstallCommand {
 
         let tool = match tool {
             Some(t) => t,
-            None => bail!("未找到工具: {}", self.tool),
+            None => bail!("{}", translate("tool.not_found").replace("{}", &self.tool)),
         };
 
         // 检查是否已安装
         if tool.is_installed() {
-            println!("{} 已经安装", style(&tool.name).green());
+            println!("{} {}", style(&tool.name).green(), translate("install.already_installed").replace("{}", &tool.name));
             return Ok(());
         }
 
-        println!("{} 安装 {}...\n", style("📦").dim(), style(&tool.name).cyan().bold());
+        println!("{} {}\n", style("📦").dim(), translate("install.installing").replace("{}", &style(&tool.name).cyan().bold().to_string()));
 
         // 选择安装方法
         let method = self.select_install_method(tool)?;
 
-        println!("使用 {} 安装...", style(&method.manager).yellow());
+        println!("{}", translate("install.using").replace("{}", &style(&method.manager.to_string()).yellow().to_string()));
 
         // 执行安装
         self.do_install(&method)?;
 
-        println!("\n{} 安装完成: {}", style("✓").green(), &method.package);
+        println!("\n{} {}", style("✓").green(), translate("install.success").replace("{}", &method.package));
 
         // 提示下一步
         if !tool.env_vars.is_empty() {
-            println!("\n下一步:");
+            println!("\n{}:", translate("install.next_steps"));
             for (i, env_var) in tool.env_vars.iter().enumerate() {
                 if env_var.required {
                     println!(
-                        "  {}. 获取 API Key: {}",
+                        "  {}. {}: {}",
                         i + 1,
+                        translate("install.get_api_key").replace("{}", "-"),
                         env_var.get_url.as_deref().unwrap_or("-")
                     );
                     println!(
@@ -63,7 +65,7 @@ impl InstallCommand {
                     );
                 }
             }
-            println!("  {}. 配置: vcm config {}", tool.env_vars.iter().filter(|e| e.required).count() + 1, tool.id);
+            println!("  {}. {}", tool.env_vars.iter().filter(|e| e.required).count() + 1, translate("install.configure").replace("{}", &tool.id));
         }
 
         Ok(())
@@ -80,7 +82,7 @@ impl InstallCommand {
                     return Ok(method);
                 }
             }
-            bail!("指定的包管理器 {} 不可用或不支持此工具", manager_name);
+            bail!("{}: {}", translate("msg.error"), manager_name);
         }
 
         // 自动选择第一个可用的方法
@@ -90,7 +92,7 @@ impl InstallCommand {
             }
         }
 
-        bail!("没有找到可用的安装方法。请安装 npm、pip、pipx 或 cargo 后重试。")
+        bail!("{}", translate("install.no_method"))
     }
 
     fn detect_available_managers(&self) -> Vec<PackageManager> {
@@ -115,7 +117,7 @@ impl InstallCommand {
                 .template("{spinner} {msg}")?
         );
         progress.enable_steady_tick(std::time::Duration::from_millis(100));
-        progress.set_message("正在安装...");
+        progress.set_message(translate("install.installing").replace("{}", "..."));
 
         let result = match method.manager {
             PackageManager::Npm => self.install_npm(&method.package),
@@ -124,7 +126,7 @@ impl InstallCommand {
             PackageManager::Cargo => self.install_cargo(&method.package),
             PackageManager::Brew => self.install_brew(&method.package),
             PackageManager::Go => self.install_go(&method.package),
-            _ => bail!("暂不支持的包管理器"),
+            _ => bail!("{}", translate("msg.unsupported_manager")),
         };
 
         progress.finish();

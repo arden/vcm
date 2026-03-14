@@ -2,6 +2,7 @@
 
 use crate::core::Registry;
 use crate::models::*;
+use crate::i18n::translate;
 use anyhow::Result;
 use console::style;
 
@@ -22,7 +23,7 @@ impl SearchCommand {
         let results = registry.search(&self.query);
 
         if results.is_empty() {
-            println!("未找到匹配的工具: {}", self.query);
+            println!("{}", translate("search.no_results").replace("{}", &self.query));
             return Ok(());
         }
 
@@ -53,10 +54,11 @@ impl SearchCommand {
     }
 
     fn output_human(&self, tools: &[&Tool]) -> Result<()> {
-        println!("{} 搜索结果: \"{}\" ({} 个)\n",
+        println!("{} {}\n",
             style("🔍").dim(),
-            style(&self.query).cyan(),
-            tools.len()
+            translate("search.results")
+                .replace("{}", &style(&self.query).cyan().to_string())
+                .replace("{count}", &tools.len().to_string())
         );
 
         for tool in tools {
@@ -67,14 +69,14 @@ impl SearchCommand {
             println!("  {}", tool.description.lines().next().unwrap_or(""));
             if !tool.tags.is_empty() {
                 println!("  {} {}",
-                    style("标签:").dim(),
+                    style(format!("{}:", translate("label.tag"))).dim(),
                     style(tool.tags.join(", ")).dim()
                 );
             }
             println!();
         }
 
-        println!("使用 {} 安装工具", style("vcm install <tool>").cyan());
+        println!("{}", translate("search.install_hint").replace("{}", &style("vcm install <tool>").cyan().to_string()));
 
         Ok(())
     }

@@ -2,6 +2,7 @@
 
 use crate::core::{Discovery, Registry};
 use crate::models::*;
+use crate::i18n::translate;
 use anyhow::Result;
 use console::style;
 use std::fs;
@@ -44,14 +45,14 @@ impl ExportCommand {
     }
 
     pub fn execute(&self) -> Result<()> {
-        println!("{} 导出已安装工具列表...\n", style("📦").dim());
+        println!("{} {}\n", style("📦").dim(), translate("export.exporting"));
 
         let registry = Registry::load()?;
         let discovery = Discovery::new(registry);
         let installed = discovery.scan();
 
         if installed.is_empty() {
-            println!("未发现已安装的 CLI AI 工具");
+            println!("{}", translate("scan.none"));
             return Ok(());
         }
 
@@ -74,13 +75,13 @@ impl ExportCommand {
         let json = serde_json::to_string_pretty(&export_data)?;
         fs::write(&self.output, &json)?;
 
-        println!("{} 已导出 {} 个工具到: {}",
-            style("✓").green(),
-            style(installed.len()).cyan().bold(),
-            style(&self.output).yellow()
+        println!("{}",
+            translate("export.exported")
+                .replace("{}", &style(installed.len()).cyan().bold().to_string())
+                .replace("{path}", &style(&self.output).yellow().to_string())
         );
 
-        println!("\n工具列表:");
+        println!("\n{}:", translate("export.tool_list"));
         for tool in &export_data.tools {
             let status = if tool.configured {
                 style("✓").green()

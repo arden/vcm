@@ -3,6 +3,7 @@
 use crate::commands::export::{ExportData, ExportedTool};
 use crate::core::Registry;
 use crate::models::*;
+use crate::i18n::translate;
 use anyhow::{bail, Result};
 use console::style;
 use std::fs;
@@ -19,23 +20,23 @@ impl ImportCommand {
     }
 
     pub fn execute(&self) -> Result<()> {
-        println!("{} 从文件导入工具列表...\n", style("📥").dim());
+        println!("{} {}\n", style("📥").dim(), translate("import.importing"));
 
         let path = std::path::Path::new(&self.input);
         if !path.exists() {
-            bail!("文件不存在: {}", self.input);
+            bail!("{}: {}", translate("msg.error"), self.input);
         }
 
         let content = fs::read_to_string(path)?;
         let export_data: ExportData = serde_json::from_str(&content)?;
 
-        println!("导入文件信息:");
-        println!("  版本: {}", export_data.version);
-        println!("  导出时间: {}", export_data.exported_at);
+        println!("{}:", translate("import.file_info"));
+        println!("  {}: {}", translate("label.version"), export_data.version);
+        println!("  {}: {}", translate("import.exported_at").split(':').next().unwrap_or("Exported at"), export_data.exported_at);
         if let Some(ref hostname) = export_data.hostname {
-            println!("  来源主机: {}", hostname);
+            println!("  {}: {}", translate("import.source_host"), hostname);
         }
-        println!("  工具数量: {}", export_data.tools.len());
+        println!("  {}: {}", translate("import.tool_count"), export_data.tools.len());
         println!();
 
         // 检查工具安装状态
@@ -57,7 +58,7 @@ impl ImportCommand {
 
         // 显示已安装工具
         if !already_installed.is_empty() {
-            println!("{} 已安装 ({} 个):", style("✓").green(), already_installed.len());
+            println!("{} {} ({}):", style("✓").green(), translate("msg.installed"), already_installed.len());
             for tool in &already_installed {
                 println!("  {} {} ({})", style("✓").green(), tool.name, tool.id);
             }
@@ -66,28 +67,26 @@ impl ImportCommand {
 
         // 显示待安装工具
         if !to_install.is_empty() {
-            println!("{} 待安装 ({} 个):", style("○").yellow(), to_install.len());
+            println!("{} {}", style("○").yellow(), translate("import.to_install").replace("{}", &to_install.len().to_string()));
             for tool in &to_install {
                 println!("  {} {} ({})", style("○").yellow(), tool.name, tool.id);
             }
             println!();
 
             if self.install {
-                println!("开始安装缺失的工具...");
+                println!("{}...", translate("import.start_install"));
                 for tool in &to_install {
                     if let Some(tool_def) = registry.find_by_id(&tool.id) {
-                        println!("\n{} 安装 {}...", style("📦").dim(), tool_def.name);
+                        println!("\n{} {}", style("📦").dim(), translate("install.installing").replace("{}", &tool_def.name));
                         // 这里可以调用安装逻辑
-                        println!("  运行: vcm install {}", tool.id);
+                        println!("  {}: vcm install {}", translate("run.launching").split("...").next().unwrap_or("Run"), tool.id);
                     }
                 }
             } else {
-                println!("提示: 使用 {} 自动安装缺失的工具",
-                    style("--install").cyan()
-                );
+                println!("{}", translate("import.hint").replace("{}", &style("--install").cyan().to_string()));
             }
         } else {
-            println!("{} 所有工具都已安装", style("✓").green());
+            println!("{} {}", style("✓").green(), translate("import.all_installed"));
         }
 
         Ok(())

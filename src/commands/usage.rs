@@ -2,6 +2,7 @@
 
 use crate::core::{Discovery, Registry};
 use crate::models::*;
+use crate::i18n::translate;
 use anyhow::Result;
 use console::style;
 
@@ -14,7 +15,7 @@ impl UsageCommand {
     }
 
     pub fn execute(&self) -> Result<()> {
-        println!("{} CLI AI 工具使用统计\n", style("📊").dim());
+        println!("{} {}\n", style("📊").dim(), translate("usage.title"));
 
         let registry = Registry::load()?;
         let discovery = Discovery::new(Registry::load()?);
@@ -52,16 +53,17 @@ impl UsageCommand {
     }
 
     fn print_overview(&self, total: usize, installed: usize, configured: usize, needs_config: usize) {
-        println!("{}", style("概览").cyan().bold());
+        println!("{}", style(translate("usage.overview")).cyan().bold());
         println!("┌───────────────────────────────────────────────┐");
-        println!("│ {:<45} │", format!("注册表工具: {}", style(total).cyan()));
-        println!("│ {:<45} │", format!("已安装: {} ({}%)", 
+        println!("│ {:<45} │", translate("usage.registry_tools").replace("{}", &style(total).cyan().to_string()));
+        println!("│ {:<45} │", format!("{}: {} ({}%)", 
+            translate("msg.installed"),
             style(installed).green(), 
             installed * 100 / total.max(1)
         ));
-        println!("│ {:<45} │", format!("已配置: {}", style(configured).green()));
+        println!("│ {:<45} │", format!("{}: {}", translate("msg.configured"), style(configured).green()));
         if needs_config > 0 {
-            println!("│ {:<45} │", format!("待配置: {}", style(needs_config).yellow()));
+            println!("│ {:<45} │", translate("usage.needs_config").replace("{}", &style(needs_config).yellow().to_string()));
         }
         println!("└───────────────────────────────────────────────┘");
         println!();
@@ -72,7 +74,7 @@ impl UsageCommand {
             return;
         }
 
-        println!("{}", style("按供应商").cyan().bold());
+        println!("{}", style(translate("usage.by_vendor")).cyan().bold());
         let mut sorted: Vec<_> = vendors.iter().collect();
         sorted.sort_by(|a, b| b.1.cmp(a.1));
 
@@ -92,11 +94,11 @@ impl UsageCommand {
             return;
         }
 
-        println!("{}", style("按安装方式").cyan().bold());
+        println!("{}", style(translate("usage.by_method")).cyan().bold());
         for (method, count) in methods {
-            println!("  {} {} 个工具", 
+            println!("  {} {}", 
                 style(method).yellow(), 
-                style(count).cyan()
+                translate("usage.tools_count").replace("{}", &style(count).cyan().to_string())
             );
         }
         println!();
@@ -107,17 +109,19 @@ impl UsageCommand {
             return;
         }
 
-        println!("{}", style("已安装工具").cyan().bold());
+        let unknown_version = translate("msg.unknown");
+
+        println!("{}", style(translate("list.installed")).cyan().bold());
         println!("{:<15} {:<12} {:<8} {}", 
-            style("工具").bold(),
-            style("版本").dim(),
-            style("配置").dim(),
-            style("路径").dim()
+            style(translate("label.tool")).bold(),
+            style(translate("label.version")).dim(),
+            style(translate("label.status")).dim(),
+            style(translate("label.path")).dim()
         );
         println!("{}", "─".repeat(60));
 
         for tool in installed {
-            let version = tool.version.as_deref().unwrap_or("未知");
+            let version = tool.version.as_deref().unwrap_or(&unknown_version);
             let config = if tool.is_configured {
                 style("✓").green()
             } else {
@@ -154,14 +158,14 @@ impl UsageCommand {
             .collect();
 
         if !featured_not_installed.is_empty() {
-            println!("{}", style("推荐安装").cyan().bold());
+            println!("{}", style(translate("usage.recommended")).cyan().bold());
             for tool in featured_not_installed {
                 println!("  {} {} - {}", 
                     style("•").dim(),
                     style(&tool.name).bold(),
                     tool.description.lines().next().unwrap_or("")
                 );
-                println!("    安装: {}", style(&format!("vcm install {}", tool.id)).cyan());
+                println!("    {}: {}", translate("install.installing").replace("...", ""), style(&format!("vcm install {}", tool.id)).cyan());
             }
             println!();
         }
@@ -172,15 +176,15 @@ impl UsageCommand {
             .collect();
 
         if !needs_config.is_empty() {
-            println!("{}", style("配置建议").yellow().bold());
+            println!("{}", style(translate("usage.config_suggestion")).yellow().bold());
             for tool in needs_config {
-                println!("  {} 需要配置 {} ({})", 
+                println!("  {} {} ({})", 
                     style("•").dim(),
                     tool.tool_name,
                     tool.missing_env_vars.join(", ")
                 );
             }
-            println!("  运行 {} 进行配置", style("vcm config <tool>").cyan());
+            println!("  {}", translate("hint.config"));
         }
     }
 }

@@ -2,6 +2,7 @@
 
 use crate::core::{Discovery, Registry};
 use crate::models::*;
+use crate::i18n::translate;
 use anyhow::Result;
 use console::style;
 use std::process::Command;
@@ -17,7 +18,7 @@ impl OutdatedCommand {
     }
 
     pub fn execute(&self) -> Result<()> {
-        println!("{} 检查工具更新...\n", style("🔍").dim());
+        println!("{} {}\n", style("🔍").dim(), translate("outdated.checking"));
 
         let registry = Registry::load()?;
         let discovery = Discovery::new(Registry::load()?);
@@ -31,7 +32,7 @@ impl OutdatedCommand {
         };
 
         if installed.is_empty() {
-            println!("未发现已安装的 CLI AI 工具");
+            println!("{}", translate("scan.none"));
             return Ok(());
         }
 
@@ -57,9 +58,9 @@ impl OutdatedCommand {
         }
 
         if outdated.is_empty() {
-            println!("{} 所有工具都是最新版本", style("✓").green());
+            println!("{} {}", style("✓").green(), translate("outdated.all_latest"));
         } else {
-            println!("{}", style("以下工具有更新可用:").yellow().bold());
+            println!("{}", style(translate("outdated.available")).yellow().bold());
             println!();
 
             for tool in &outdated {
@@ -73,10 +74,7 @@ impl OutdatedCommand {
             }
 
             println!();
-            println!(
-                "运行 {} 更新工具",
-                style("vcm update <tool>").cyan()
-            );
+            println!("{}", translate("outdated.update_hint").replace("{}", &style("vcm update <tool>").cyan().to_string()));
         }
 
         Ok(())

@@ -82,33 +82,51 @@ impl StatusCommand {
         let mut configured = 0;
         let mut needs_config = 0;
 
-        for tool in tools {
-            let version = tool.version.as_deref().unwrap_or(&translate("msg.unknown"));
+        let unknown_version = translate("msg.unknown");
+        let status_healthy = translate("status.healthy");
+        let status_warning = translate("status.warning");
+        let label_missing = translate("label.missing");
 
-            let status_icon = if tool.is_configured {
+        for tool in tools {
+            let version = tool.version.as_deref().unwrap_or(&unknown_version);
+
+            if tool.is_configured {
                 configured += 1;
-                style(&format!("✓ {}", translate("status.healthy"))).green()
+                let status_text = format!("✓ {}", status_healthy);
+                let note = if !tool.missing_env_vars.is_empty() {
+                    format!("{}: {}", label_missing, tool.missing_env_vars.join(", "))
+                } else {
+                    "".to_string()
+                };
+                println!(
+                    "{:<15} {:<12} {:<10} {}",
+                    style(&tool.tool_name).bold(),
+                    style(version).dim(),
+                    style(status_text).green(),
+                    style(note).yellow()
+                );
             } else if !tool.missing_env_vars.is_empty() {
                 needs_config += 1;
-                style(&format!("⚠ {}", translate("status.warning"))).yellow()
+                let status_text = format!("⚠ {}", status_warning);
+                let note = format!("{}: {}", label_missing, tool.missing_env_vars.join(", "));
+                println!(
+                    "{:<15} {:<12} {:<10} {}",
+                    style(&tool.tool_name).bold(),
+                    style(version).dim(),
+                    style(status_text).yellow(),
+                    style(note).yellow()
+                );
             } else {
                 configured += 1;
-                style(&format!("✓ {}", translate("status.healthy"))).green()
-            };
-
-            let note = if !tool.missing_env_vars.is_empty() {
-                style(format!("{}: {}", translate("label.missing"), tool.missing_env_vars.join(", "))).yellow()
-            } else {
-                style("".to_string()).dim()
-            };
-
-            println!(
-                "{:<15} {:<12} {:<10} {}",
-                style(&tool.tool_name).bold(),
-                style(version).dim(),
-                status_icon,
-                note
-            );
+                let status_text = format!("✓ {}", status_healthy);
+                println!(
+                    "{:<15} {:<12} {:<10} {}",
+                    style(&tool.tool_name).bold(),
+                    style(version).dim(),
+                    style(status_text).green(),
+                    style("").dim()
+                );
+            }
         }
 
         // 汇总

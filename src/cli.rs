@@ -7,149 +7,149 @@ use clap::{Parser, Subcommand};
 #[command(name = "vcm")]
 #[command(author = "Arden")]
 #[command(version)]
-#[command(about = "CLI AI编程工具管理器", long_about = None)]
+#[command(about = "CLI AI Programming Tool Manager", long_about = None)]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
 
-    /// 详细输出
+    /// Verbose output
     #[arg(short, long, global = true)]
     pub verbose: bool,
 
-    /// JSON 输出格式
+    /// JSON output format
     #[arg(short, long, global = true)]
     pub json: bool,
 }
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    /// 扫描系统已安装的工具
+    /// Scan system for installed tools
     Scan {
-        /// 显示详细信息
+        /// Show detailed information
         #[arg(short, long)]
         detailed: bool,
     },
 
-    /// 列出所有已知工具
+    /// List all known tools
     List {
-        /// 仅显示已安装
+        /// Show only installed tools
         #[arg(short, long)]
         installed: bool,
 
-        /// 按标签筛选
+        /// Filter by tag
         #[arg(short, long)]
         tag: Option<String>,
     },
 
-    /// 安装工具
+    /// Install a tool
     Install {
-        /// 工具ID或名称
+        /// Tool ID or name
         tool: String,
 
-        /// 指定包管理器
+        /// Specify package manager
         #[arg(short, long)]
         manager: Option<String>,
     },
 
-    /// 更新工具
+    /// Update tools
     Update {
-        /// 工具ID（可选，不指定则更新全部）
+        /// Tool ID (optional, updates all if not specified)
         tool: Option<String>,
     },
 
-    /// 卸载工具
+    /// Remove a tool
     Remove {
-        /// 工具ID
+        /// Tool ID
         tool: String,
     },
 
-    /// 配置工具
+    /// Configure a tool
     Config {
-        /// 工具ID
+        /// Tool ID
         tool: Option<String>,
 
-        /// 设置API Key (格式: PROVIDER=KEY)
+        /// Set API Key (format: PROVIDER=KEY)
         #[arg(long)]
         set_key: Option<String>,
     },
 
-    /// 检查工具状态
+    /// Check tool status
     Status,
 
-    /// 搜索工具
+    /// Search tools
     Search {
-        /// 搜索关键词
+        /// Search query
         query: String,
     },
 
-    /// 显示工具详情
+    /// Show tool details
     Info {
-        /// 工具ID
+        /// Tool ID
         tool: String,
     },
 
-    /// 系统诊断
+    /// System diagnostics
     Doctor,
 
-    /// 更新注册表
+    /// Update registry
     UpdateRegistry {
-        /// 自定义注册表 URL
+        /// Custom registry URL
         #[arg(short, long)]
         url: Option<String>,
     },
 
-    /// 生成 shell 补全脚本
+    /// Generate shell completion script
     Completions {
-        /// Shell 类型 (bash, zsh, fish, powershell)
+        /// Shell type (bash, zsh, fish, powershell)
         shell: String,
     },
 
-    /// 检查已安装工具是否有更新
+    /// Check for tool updates
     Outdated,
 
-    /// 导出已安装工具列表
+    /// Export installed tools list
     Export {
-        /// 输出文件路径
+        /// Output file path
         #[arg(short, long, default_value = "vcm-tools.json")]
         output: String,
     },
 
-    /// 从文件导入工具列表
+    /// Import tools list from file
     Import {
-        /// 输入文件路径
+        /// Input file path
         #[arg(short, long, default_value = "vcm-tools.json")]
         input: String,
         
-        /// 是否安装缺失的工具
+        /// Install missing tools
         #[arg(short, long)]
         install: bool,
     },
 
-    /// 交互式初始化向导
+    /// Interactive setup wizard
     Init,
 
-    /// 显示工具使用统计
+    /// Show tool usage statistics
     Usage,
 
-    /// 启动 CLI AI 工具
+    /// Launch a CLI AI tool
     Run {
-        /// 工具ID或名称
+        /// Tool ID or name
         tool: String,
 
-        /// 传递给工具的参数
+        /// Arguments to pass to the tool
         #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
         args: Vec<String>,
     },
 
-    /// 设置默认工具
+    /// Set default tool
     Default {
-        /// 工具ID（不指定则显示当前默认工具）
+        /// Tool ID (shows current default if not specified)
         tool: Option<String>,
     },
 
-    /// 显示或设置语言
+    /// Display or set language
     Lang {
-        /// 语言代码 (en/zh)
+        /// Language code (en/zh)
         lang: Option<String>,
     },
 }

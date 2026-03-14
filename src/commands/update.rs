@@ -2,6 +2,7 @@
 
 use crate::core::{Discovery, Registry};
 use crate::models::*;
+use crate::i18n::translate;
 use anyhow::{bail, Result};
 use console::style;
 use indicatif::{ProgressBar, ProgressStyle};
@@ -41,12 +42,12 @@ impl UpdateCommand {
 
         let tool = match tool {
             Some(t) => t,
-            None => bail!("未找到工具: {}", tool_id),
+            None => bail!("{}", translate("tool.not_found").replace("{}", tool_id)),
         };
 
         // 检查是否已安装
         if !tool.is_installed() {
-            bail!("工具 {} 未安装，请先安装", tool.name);
+            bail!("{}", translate("update.not_installed").replace("{}", &tool.name));
         }
 
         // 检测安装方式
@@ -54,21 +55,21 @@ impl UpdateCommand {
         let install_method = installed.as_ref()
             .and_then(|i| i.install_method.clone());
 
-        println!("{} 更新 {}...\n", style("📦").dim(), style(&tool.name).cyan().bold());
+        println!("{} {}\n", style("📦").dim(), translate("update.updating").replace("{}", &style(&tool.name).cyan().bold().to_string()));
 
         // 执行更新
         if let Some(method) = install_method {
             self.do_update(&method, &get_package_name(tool, &method))?;
-            println!("{} 更新完成", style("✓").green());
+            println!("{} {}", style("✓").green(), translate("update.updating").replace("{}", "").trim());
         } else {
             // 尝试所有安装方法
             for install_method in &tool.install_methods {
                 if self.do_update(&install_method.manager, &install_method.package).is_ok() {
-                    println!("{} 更新完成", style("✓").green());
+                    println!("{} {}", style("✓").green(), translate("update.updating").replace("{}", "").trim());
                     return Ok(());
                 }
             }
-            bail!("无法确定更新方式，请手动更新");
+            bail!("{}", translate("update.cannot_update"));
         }
 
         Ok(())
@@ -78,19 +79,19 @@ impl UpdateCommand {
         let installed = discovery.scan();
 
         if installed.is_empty() {
-            println!("没有已安装的工具需要更新");
+            println!("{}", translate("update.no_tools"));
             return Ok(());
         }
 
-        println!("{} 更新所有已安装工具...\n", style("📦").dim());
-        println!("发现 {} 个已安装工具\n", installed.len());
+        println!("{} {}\n", style("📦").dim(), translate("update.all"));
+        println!("{}\n", translate("update.found_tools").replace("{}", &installed.len().to_string()));
 
         let mut success = 0;
         let mut failed = 0;
 
         for tool_info in &installed {
             if let Some(tool) = discovery.registry().find_by_id(&tool_info.tool_id) {
-                print!("  更新 {}... ", style(&tool.name).bold());
+                print!("  {}... ", translate("update.updating").replace("{}", &style(&tool.name).bold().to_string()));
 
                 if let Some(ref method) = tool_info.install_method {
                     match self.do_update_silent(method, &get_package_name(tool, method)) {
@@ -99,19 +100,19 @@ impl UpdateCommand {
                             success += 1;
                         }
                         Err(_) => {
-                            println!("{}", style("✗ 失败").red());
+                            println!("{} {}", style("✗").red(), translate("msg.failed"));
                             failed += 1;
                         }
                     }
                 } else {
-                    println!("{}", style("○ 跳过").dim());
+                    println!("○ {}", translate("msg.skipped"));
                 }
             }
         }
 
-        println!("\n更新完成: {} 成功, {} 失败", 
-            style(success).green(),
-            style(failed).red()
+        println!("\n{}", translate("update.complete")
+            .replace("{}", &style(success).green().to_string())
+            .replace("{failed}", &style(failed).red().to_string())
         );
 
         Ok(())
@@ -121,7 +122,7 @@ impl UpdateCommand {
         let progress = ProgressBar::new_spinner();
         progress.set_style(ProgressStyle::default_spinner().template("{spinner} {msg}")?);
         progress.enable_steady_tick(std::time::Duration::from_millis(100));
-        progress.set_message("正在更新...");
+        progress.set_message(translate("update.updating_progress"));
 
         let result = self.do_update_silent(manager, package);
 
@@ -162,11 +163,11 @@ impl UpdateCommand {
                     .args(["install", package])
                     .status()?
             }
-            _ => bail!("暂不支持的包管理器"),
+            _ => bail!("{}", translate("msg.unsupported_manager")),
         };
 
         if !status.success() {
-            bail!("更新失败");
+            bail!("{}", translate("msg.failed"));
         }
         Ok(())
     }

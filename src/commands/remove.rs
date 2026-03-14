@@ -2,6 +2,7 @@
 
 use crate::core::{Discovery, Registry};
 use crate::models::*;
+use crate::i18n::translate;
 use anyhow::{bail, Result};
 use console::style;
 use dialoguer::Confirm;
@@ -27,12 +28,12 @@ impl RemoveCommand {
 
         let tool = match tool {
             Some(t) => t,
-            None => bail!("未找到工具: {}", self.tool),
+            None => bail!("{}", translate("tool.not_found").replace("{}", &self.tool)),
         };
 
         // 检查是否已安装
         if !tool.is_installed() {
-            bail!("工具 {} 未安装", tool.name);
+            bail!("{}", translate("remove.not_installed").replace("{}", &tool.name));
         }
 
         // 获取安装信息
@@ -43,35 +44,35 @@ impl RemoveCommand {
         // 确认卸载
         if !self.force {
             let confirm = Confirm::new()
-                .with_prompt(format!("确定要卸载 {} 吗?", style(&tool.name).cyan()))
+                .with_prompt(&translate("remove.confirm").replace("{}", &style(&tool.name).cyan().to_string()))
                 .default(false)
                 .interact()?;
 
             if !confirm {
-                println!("已取消");
+                println!("{}", translate("msg.cancelled"));
                 return Ok(());
             }
         }
 
-        println!("{} 卸载 {}...\n", style("🗑️").dim(), style(&tool.name).cyan().bold());
+        println!("{} {}\n", style("🗑️").dim(), translate("remove.removing").replace("{}", &style(&tool.name).cyan().bold().to_string()));
 
         // 执行卸载
         if let Some(method) = install_method {
             let package = get_package_name(tool, &method);
             self.do_remove(&method, &package)?;
-            println!("{} 已卸载 {}", style("✓").green(), tool.name);
+            println!("{} {}", style("✓").green(), translate("remove.removed").replace("{}", &tool.name));
         } else {
             // 尝试所有安装方法
             let mut removed = false;
             for install_method in &tool.install_methods {
                 if self.do_remove_silent(&install_method.manager, &install_method.package).is_ok() {
-                    println!("{} 已卸载 {}", style("✓").green(), tool.name);
+                    println!("{} {}", style("✓").green(), translate("remove.removed").replace("{}", &tool.name));
                     removed = true;
                     break;
                 }
             }
             if !removed {
-                bail!("无法确定卸载方式，请手动卸载");
+                bail!("{}", translate("remove.cannot_remove"));
             }
         }
 
@@ -111,11 +112,11 @@ impl RemoveCommand {
                     .args(["uninstall", package])
                     .status()?
             }
-            _ => bail!("暂不支持的包管理器"),
+            _ => bail!("{}", translate("msg.unsupported_manager")),
         };
 
         if !status.success() {
-            bail!("卸载失败");
+            bail!("{}", translate("remove.failed"));
         }
         Ok(())
     }

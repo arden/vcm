@@ -2,6 +2,7 @@
 
 use crate::core::{ConfigManager, Discovery, Registry};
 use crate::models::*;
+use crate::i18n::translate;
 use anyhow::{bail, Result};
 use console::style;
 use dialoguer::{Input, Select};
@@ -36,7 +37,7 @@ impl ConfigCommand {
 
         let tool = match tool {
             Some(t) => t,
-            None => bail!("未找到工具: {}", tool_id),
+            None => bail!("{}", translate("tool.not_found").replace("{}", &tool_id)),
         };
 
         self.configure_tool(tool)
@@ -45,7 +46,7 @@ impl ConfigCommand {
     fn set_api_key(&self, key_spec: &str) -> Result<()> {
         let parts: Vec<&str> = key_spec.splitn(2, '=').collect();
         if parts.len() != 2 {
-            bail!("格式错误，请使用: PROVIDER=KEY");
+            bail!("{}", translate("config.format_error"));
         }
 
         let var_name = parts[0];
@@ -61,8 +62,8 @@ impl ConfigCommand {
             .open(&shell_config)?
             .write_all(export_line.as_bytes())?;
 
-        println!("{} 已设置环境变量 {}", style("✓").green(), var_name);
-        println!("运行 {} 使配置生效", style("source ~/.bashrc").cyan());
+        println!("{} {}", style("✓").green(), translate("config.env_var_set").replace("{}", var_name));
+        println!("{}", translate("config.apply_changes").replace("{}", &style("source ~/.bashrc").cyan().to_string()));
 
         Ok(())
     }
@@ -71,10 +72,10 @@ impl ConfigCommand {
         let config_manager = ConfigManager::new()?;
         let config = config_manager.load_config()?;
 
-        println!("{} 配置概览\n", style("⚙️").dim());
+        println!("{} {}\n", style("⚙️").dim(), translate("config.overview"));
 
         // API Keys 状态
-        println!("{}", style("API Keys 状态:").bold());
+        println!("{}", style(translate("config.api_key_status")).bold());
 
         let env_vars = [
             ("ANTHROPIC_API_KEY", "Anthropic"),
@@ -85,25 +86,25 @@ impl ConfigCommand {
 
         for (var_name, provider) in &env_vars {
             let status = if std::env::var(var_name).is_ok() {
-                style("✓ 已配置").green()
+                style(format!("✓ {}", translate("msg.configured"))).green()
             } else {
-                style("○ 未配置").dim()
+                style(format!("○ {}", translate("msg.not_configured"))).dim()
             };
             println!("  {:<20} {} {}", provider, status, style(var_name).dim());
         }
 
         // 默认工具
         if let Some(ref default) = config.settings.default_tool {
-            println!("\n{}: {}", style("默认工具").bold(), default);
+            println!("\n{}: {}", style(translate("config.default_tool")).bold(), default);
         }
 
-        println!("\n使用 {} 配置特定工具", style("vcm config <tool>").cyan());
+        println!("\n{} {}", translate("hint.install").split('`').next().unwrap_or("Use"), style("vcm config <tool>").cyan());
 
         Ok(())
     }
 
     fn configure_tool(&self, tool: &Tool) -> Result<()> {
-        println!("{} 配置 {}\n", style("🔑").dim(), style(&tool.name).cyan().bold());
+        println!("{} {}\n", style("🔑").dim(), translate("config.title").replace("{}", &style(&tool.name).cyan().bold().to_string()));
 
         // 检查当前状态
         let env_status: Vec<(String, bool)> = tool.env_vars.iter()
@@ -113,11 +114,11 @@ impl ConfigCommand {
         let all_configured = env_status.iter().all(|(_, configured)| *configured);
 
         if all_configured {
-            println!("{} 所有环境变量已配置", style("✓").green());
+            println!("{} {}", style("✓").green(), translate("config.all_configured"));
 
-            let options = vec!["更新 API Key", "查看配置文件", "返回"];
+            let options = vec![translate("config.update_key"), translate("config.view_files"), translate("config.back")];
             let selection = Select::new()
-                .with_prompt("选择操作")
+                .with_prompt(&translate("config.select_action"))
                 .items(&options)
                 .interact()?;
 
@@ -127,7 +128,7 @@ impl ConfigCommand {
                 _ => Ok(()),
             }
         } else {
-            println!("以下环境变量需要配置:");
+            println!("{}:", translate("config.need_config"));
             for env_var in &tool.env_vars {
                 let status = if std::env::var(&env_var.name).is_ok() {
                     style("✓").green()
@@ -150,11 +151,11 @@ impl ConfigCommand {
         for env_var in &tool.env_vars {
             if std::env::var(&env_var.name).is_err() {
                 if let Some(ref url) = env_var.get_url {
-                    println!("\n获取 API Key: {}", style(url).cyan());
+                    println!("\n{}: {}", translate("install.get_api_key").replace("{}", ""), style(url).cyan());
                 }
 
                 let key: String = Input::new()
-                    .with_prompt(format!("请输入 {}", env_var.name))
+                    .with_prompt(&translate("config.input_prompt").replace("{}", &env_var.name))
                     .interact()?;
 
                 // 写入到 shell 配置
@@ -166,17 +167,17 @@ impl ConfigCommand {
                     .open(&shell_config)?
                     .write_all(export_line.as_bytes())?;
 
-                println!("{} 已设置 {}", style("✓").green(), env_var.name);
+                println!("{} {}", style("✓").green(), translate("config.env_var_set").replace("{}", &env_var.name));
             }
         }
 
-        println!("\n运行 {} 使配置生效", style("source ~/.bashrc").cyan());
+        println!("\n{}", translate("config.apply_changes").replace("{}", &style("source ~/.bashrc").cyan().to_string()));
 
         Ok(())
     }
 
     fn show_config_files(&self, tool: &Tool) -> Result<()> {
-        println!("\n{} 配置文件:", style(&tool.name).bold());
+        println!("\n{}:", translate("config.config_files").replace("{}", &tool.name));
 
         let home = dirs::home_dir().unwrap_or_default();
 
