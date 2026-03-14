@@ -818,3 +818,83 @@ tools:
       - github
     is_cli: true
     is_gui: false
+
+  # === OB1 ===
+  - id: ob1
+    name: OB1
+    vendor: OB1
+    description: |
+      终端 AI 编程助手，支持 MCP 服务器、扩展、技能和钩子。
+      支持 YOLO 模式、策略引擎和 ACP 模式。
+    website: https://ob1.dev
+    executables:
+      - ob1
+    install_methods:
+      - manager: npm
+        package: "@ob1/ob1"
+    config_paths:
+      - ~/.ob1
+      - ~/.config/ob1
+    tags:
+      - ai
+      - coding
+      - cli
+      - mcp
+      - agent
+    is_cli: true
+    is_gui: false
+    featured: true
+
+  # === Droid ===
+  - id: droid
+    name: Droid
+    vendor: Factory
+    description: |
+      Factory 公司的 AI 编程代理，支持终端交互模式。
+      支持 MCP 服务器、插件、守护进程和工作树模式。
+    website: https://factory.ai
+    repository: https://github.com/factoryai/droid
+    executables:
+      - droid
+    config_paths:
+      - ~/.droid
+      - ~/.config/droid
+    tags:
+      - ai
+      - coding
+      - cli
+      - mcp
+      - agent
+    is_cli: true
+    is_gui: false
+    featured: true
+
+  # === Pi ===
+  - id: pi
+    name: Pi
+    vendor: Open Source
+    description: |
+      高性能 AI 编程代理 CLI，Rust 实现。
+      支持扩展、技能、提示词、主题，支持多 LLM 提供商。
+    website: https://github.com/pi-agent/pi
+    executables:
+      - pi
+    config_paths:
+      - ~/.pi
+      - ~/.config/pi
+    env_vars:
+      - name: PI_PROVIDER
+        description: LLM provider (anthropic, openai, google)
+        required: false
+      - name: PI_MODEL
+        description: Model ID (claude-opus-4, gpt-4o)
+        required: false
+    tags:
+      - ai
+      - coding
+      - cli
+      - agent
+      - rust
+    is_cli: true
+    is_gui: false
+    featured: true
