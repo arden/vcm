@@ -323,6 +323,9 @@ pub struct Settings {
     /// 自动更新注册表
     #[serde(default = "default_true")]
     pub auto_update_registry: bool,
+    /// 工具别名 (alias -> tool_id)
+    #[serde(default)]
+    pub aliases: HashMap<String, String>,
 }
 
 /// 注册表配置

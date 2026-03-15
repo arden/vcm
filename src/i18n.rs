@@ -390,6 +390,24 @@ fn get_en_translations() -> &'static std::collections::HashMap<&'static str, &'s
         m.insert("backend.cargo_remove_failed", "cargo uninstall failed");
         m.insert("backend.brew_remove_failed", "brew uninstall failed");
         
+        // Alias command
+        m.insert("alias.title", "Tool Aliases");
+        m.insert("alias.none", "No aliases configured");
+        m.insert("alias.set", "Alias set: {} -> {}");
+        m.insert("alias.removed", "Alias removed: {}");
+        m.insert("alias.not_found", "Alias '{}' does not exist");
+        m.insert("alias.reserved", "'{}' is a reserved command, cannot be used as alias");
+        m.insert("alias.tool_not_found", "Warning: Tool '{}' not found in registry, but alias will still be created");
+        m.insert("alias.overwrite", "Alias '{}' already maps to '{}', updating to '{}'");
+        m.insert("alias.hint", "Tip: Use 'vcm <alias>' to quickly launch a tool");
+        m.insert("alias.hint_example", "Example: 'vcm cc' will launch claude-code (if alias cc is set)");
+        
+        // Compare command
+        m.insert("compare.title", "Tool Comparison");
+        m.insert("compare.min_tools", "At least two tools are required for comparison");
+        m.insert("compare.max_tools", "Maximum 5 tools can be compared at once");
+        m.insert("compare.tool_not_found", "Tool '{}' not found");
+        
         m
     })
 }
@@ -699,6 +717,24 @@ fn get_zh_translations() -> &'static std::collections::HashMap<&'static str, &'s
         m.insert("backend.pip_remove_failed", "pip 卸载失败");
         m.insert("backend.cargo_remove_failed", "cargo 卸载失败");
         m.insert("backend.brew_remove_failed", "brew 卸载失败");
+        
+        // Alias 命令
+        m.insert("alias.title", "工具别名列表");
+        m.insert("alias.none", "未设置任何别名");
+        m.insert("alias.set", "已设置别名: {} -> {}");
+        m.insert("alias.removed", "已删除别名: {}");
+        m.insert("alias.not_found", "别名 '{}' 不存在");
+        m.insert("alias.reserved", "'{}' 是保留命令，不能用作别名");
+        m.insert("alias.tool_not_found", "警告: 工具 '{}' 未在注册表中找到，但仍会创建别名");
+        m.insert("alias.overwrite", "别名 '{}' 已映射到 '{}'，将更新为 '{}'");
+        m.insert("alias.hint", "提示: 使用 'vcm <alias>' 快速启动工具");
+        m.insert("alias.hint_example", "示例: 'vcm cc' 将启动 claude-code (如果设置了别名 cc)");
+        
+        // Compare 命令
+        m.insert("compare.title", "工具对比");
+        m.insert("compare.min_tools", "至少需要指定两个工具进行对比");
+        m.insert("compare.max_tools", "最多支持同时对比 5 个工具");
+        m.insert("compare.tool_not_found", "工具 '{}' 未找到");
         
         m
     })

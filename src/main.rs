@@ -103,8 +103,188 @@ fn main() -> anyhow::Result<()> {
             let cmd = LangCommand::new(lang);
             cmd.execute()?;
         }
-        Commands::Free { pro } => {
-            let cmd = FreeCommand::new(pro);
+        Commands::Free { pro, aggregate } => {
+            let cmd = FreeCommand::new(pro, aggregate);
+            cmd.execute()?;
+        }
+        Commands::Alias { alias, tool, remove } => {
+            use vcm::commands::alias::AliasAction;
+            let action = if remove {
+                AliasAction::Remove { 
+                    alias: alias.unwrap_or_default() 
+                }
+            } else if let Some(a) = alias {
+                if let Some(t) = tool {
+                    AliasAction::Set { alias: a, tool: t }
+                } else {
+                    AliasAction::List
+                }
+            } else {
+                AliasAction::List
+            };
+            let cmd = AliasCommand::new(action);
+            cmd.execute()?;
+        }
+        Commands::Compare { tools } => {
+            let cmd = CompareCommand::new(tools);
+            cmd.execute()?;
+        }
+        Commands::Quota { action, value, tool } => {
+            use vcm::commands::quota::QuotaAction;
+            let quota_action = match action.as_deref() {
+                Some("warn") => {
+                    QuotaAction::Warn { 
+                        threshold: value.unwrap_or(80) 
+                    }
+                }
+                Some("limit") => {
+                    QuotaAction::Limit { 
+                        threshold: value 
+                    }
+                }
+                Some("usage") => {
+                    QuotaAction::Usage { tool }
+                }
+                Some("reset") => {
+                    QuotaAction::Reset { tool }
+                }
+                Some("status") | None => {
+                    QuotaAction::Status
+                }
+                Some(other) => {
+                    anyhow::bail!("未知的配额操作: '{}'\n可用操作: status, warn, limit, usage, reset", other);
+                }
+            };
+            let cmd = QuotaCommand::new(quota_action);
+            cmd.execute()?;
+        }
+        Commands::Stats => {
+            let cmd = StatsCommand::new(false, cli.json);
+            cmd.execute()?;
+        }
+        Commands::Cost => {
+            let cmd = StatsCommand::new(true, cli.json);
+            cmd.execute()?;
+        }
+        Commands::Project { action, tool, model } => {
+            use vcm::commands::project::ProjectAction;
+            let project_action = match action.as_deref() {
+                Some("init") => ProjectAction::Init,
+                Some("use") => {
+                    ProjectAction::Use { 
+                        tool: tool.unwrap_or_default(),
+                        model 
+                    }
+                }
+                Some("path") => ProjectAction::Path,
+                Some("status") | None => ProjectAction::Status,
+                Some(other) => {
+                    anyhow::bail!("未知的项目操作: '{}'\n可用操作: init, status, use, path", other);
+                }
+            };
+            let cmd = ProjectCommand::new(project_action);
+            cmd.execute()?;
+        }
+        Commands::Fallback { action, primary, fallbacks, enable, disable } => {
+            use vcm::commands::fallback::FallbackAction;
+            let fallback_action = if enable {
+                FallbackAction::Toggle { enabled: true }
+            } else if disable {
+                FallbackAction::Toggle { enabled: false }
+            } else {
+                match action.as_deref() {
+                    Some("add") => {
+                        FallbackAction::Add { 
+                            primary: primary.unwrap_or_default(),
+                            fallbacks 
+                        }
+                    }
+                    Some("remove") => {
+                        FallbackAction::Remove { 
+                            primary: primary.unwrap_or_default() 
+                        }
+                    }
+                    Some("default") => {
+                        let mut tools = vec![primary.unwrap_or_default()];
+                        tools.extend(fallbacks);
+                        FallbackAction::SetDefault { tools }
+                    }
+                    Some("status") | None => FallbackAction::Status,
+                    Some(other) => {
+                        anyhow::bail!("未知的降级操作: '{}'\n可用操作: status, add, remove, default", other);
+                    }
+                }
+            };
+            let cmd = FallbackCommand::new(fallback_action);
+            cmd.execute()?;
+        }
+        Commands::Key { action, tool, name, key, enable, disable } => {
+            use vcm::commands::key::KeyAction;
+            let key_action = if enable || disable {
+                KeyAction::Rotate { 
+                    tool: tool.unwrap_or_default(),
+                    enable: enable 
+                }
+            } else {
+                match action.as_deref() {
+                    Some("add") => {
+                        KeyAction::Add { 
+                            tool: tool.unwrap_or_default(),
+                            name: name.unwrap_or_default(),
+                            key: key.unwrap_or_default(),
+                        }
+                    }
+                    Some("remove") => {
+                        KeyAction::Remove { 
+                            tool: tool.unwrap_or_default(),
+                            name: name.unwrap_or_default(),
+                        }
+                    }
+                    Some("switch") => {
+                        KeyAction::Switch { 
+                            tool: tool.unwrap_or_default(),
+                            name: name.unwrap_or_default(),
+                        }
+                    }
+                    Some("rotate") => {
+                        KeyAction::Rotate { 
+                            tool: tool.unwrap_or_default(),
+                            enable: true,
+                        }
+                    }
+                    Some("current") => {
+                        KeyAction::Current { 
+                            tool: tool.unwrap_or_default(),
+                        }
+                    }
+                    Some("list") | None => {
+                        KeyAction::List { tool }
+                    }
+                    Some(other) => {
+                        anyhow::bail!("未知的 Key 操作: '{}'\n可用操作: list, add, remove, switch, rotate, current", other);
+                    }
+                }
+            };
+            let cmd = KeyCommand::new(key_action);
+            cmd.execute()?;
+        }
+        Commands::Recommend { tag } => {
+            use vcm::commands::recommend::RecommendMode;
+            let mode = match tag {
+                Some(t) => RecommendMode::ByTag(t),
+                None => RecommendMode::Personal,
+            };
+            let cmd = RecommendCommand::new(mode);
+            cmd.execute()?;
+        }
+        Commands::Trending => {
+            use vcm::commands::recommend::RecommendMode;
+            let cmd = RecommendCommand::new(RecommendMode::Trending);
+            cmd.execute()?;
+        }
+        Commands::New => {
+            use vcm::commands::recommend::RecommendMode;
+            let cmd = RecommendCommand::new(RecommendMode::New);
             cmd.execute()?;
         }
     }

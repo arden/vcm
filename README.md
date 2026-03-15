@@ -181,6 +181,8 @@ vcm run claude-code
 
 ## Commands Reference
 
+### Basic Commands
+
 | Command | Description |
 |---------|-------------|
 | `vcm scan` | Scan for installed AI coding tools |
@@ -199,6 +201,23 @@ vcm run claude-code
 | `vcm init` | Interactive setup wizard |
 | `vcm usage` | Show usage statistics |
 | `vcm lang [en\|zh]` | Set language |
+
+### v2.0 New Commands
+
+| Command | Description |
+|---------|-------------|
+| `vcm alias <name> <tool>` | Set tool alias for quick launch |
+| `vcm compare <t1> <t2>...` | Compare multiple tools side-by-side |
+| `vcm free --aggregate` | Aggregate all free quotas |
+| `vcm quota status` | Monitor quota usage |
+| `vcm stats` | Show usage statistics |
+| `vcm cost` | Estimate API costs |
+| `vcm project init` | Initialize project-level config |
+| `vcm fallback add <primary> <fallback>` | Set up fallback chain |
+| `vcm key add <tool> <name> <key>` | Manage multiple API keys |
+| `vcm recommend` | Get personalized recommendations |
+| `vcm trending` | Show trending tools |
+| `vcm new` | Show newly added tools |
 
 ### Global Options
 
@@ -310,6 +329,166 @@ Models with **≥60% on SWE-bench Verified** are considered pro-grade for real-w
 | Gemini 3 Pro | 76.2% | Google |
 | Gemini 2.5 Pro | 63.2% | Google |
 | Qwen3-Coder-480B | 69.6% | Alibaba |
+
+---
+
+## v2.0 New Features
+
+### Tool Aliases
+
+Set short aliases for quick tool launch:
+
+```bash
+# Set alias
+vcm alias cc claude-code
+
+# Now you can use
+vcm cc
+```
+
+### Tool Comparison
+
+Compare multiple tools side-by-side:
+
+```bash
+vcm compare gemini-cli claude-code aider
+```
+
+Output:
+```
+工具对比
+══════════════════════════════════════════════════════════════════
+特性          │Gemini CLI        │Claude Code       │Aider
+────────────────────────────────────────────────────────────────────
+供应商         │Google            │Anthropic         │Open Source
+免费额度        │100 requests/...  │付费               │Unlimited...
+专业模型        │Gemini 2.5 Pro... │-                  │Qwen3-Coder...
+需信用卡        │否                 │否                 │否
+```
+
+### Free Quota Aggregation
+
+See all your free quotas in one place:
+
+```bash
+vcm free --aggregate
+```
+
+Output:
+```
+🎁 免费额度聚合面板
+
+工具                   免费额度                      专业级模型                状态
+────────────────────────────────────────────────────────────────────────
+Gemini CLI           100 requests/day            Gemini 2.5 Pro       ✓ 已安装
+Kiro                 50 credits/month            Claude 4 Sonnet      ✓ 已安装
+Ollama               Unlimited - runs locally    Qwen2.5-Coder        ✓ 已安装
+
+📊 聚合统计
+  • 有免费额度的工具: 9 个
+  • 提供专业级模型的工具: 9 个
+  • 可免费使用的专业级模型: 19 个
+```
+
+### Quota Tracking
+
+Monitor your usage and set alerts:
+
+```bash
+# View quota status
+vcm quota status
+
+# Set warning threshold (80%)
+vcm quota warn 80
+
+# Set hard limit (100%)
+vcm quota limit 100
+```
+
+### Usage Statistics & Cost Estimation
+
+Track your tool usage:
+
+```bash
+# Show usage statistics
+vcm stats
+
+# Estimate API costs
+vcm cost
+```
+
+### Project-Level Configuration
+
+Configure tools per project:
+
+```bash
+# Initialize project config
+vcm project init
+
+# Set default tool for project
+vcm project use claude-code --model claude-sonnet-4
+
+# View project config
+vcm project status
+```
+
+Creates `.vcm/config.toml` in your project:
+```toml
+name = "my-project"
+default_tool = "claude-code"
+
+[tools.claude-code]
+model = "claude-sonnet-4"
+```
+
+### Smart Fallback Chain
+
+Automatically switch to backup tools when primary fails:
+
+```bash
+# Add fallback chain: claude-code → gemini-cli → ollama
+vcm fallback add claude-code gemini-cli ollama
+
+# Enable fallback
+vcm fallback --enable
+```
+
+### Multiple API Keys
+
+Manage multiple accounts for the same tool:
+
+```bash
+# Add keys
+vcm key add claude-code personal sk-ant-xxx
+vcm key add claude-code work sk-ant-yyy
+
+# List keys
+vcm key list
+
+# Switch active key
+vcm key switch claude-code work
+
+# Enable key rotation
+vcm key rotate claude-code --enable
+```
+
+### Tool Recommendations
+
+Discover new tools:
+
+```bash
+# Personalized recommendations
+vcm recommend
+
+# Trending tools
+vcm trending
+
+# New tools
+vcm new
+
+# Filter by tag
+vcm recommend --tag coding
+```
 
 ---
 

@@ -1,6 +1,6 @@
 //! run 命令实现 - 启动 CLI AI 工具
 
-use crate::core::Registry;
+use crate::core::{ConfigManager, Registry};
 use crate::models::*;
 use crate::i18n::translate;
 use anyhow::{bail, Result};
@@ -18,12 +18,29 @@ impl RunCommand {
         Self { tool, args }
     }
 
+    /// 解析工具名称或别名
+    fn resolve_tool_id(&self) -> Result<String> {
+        let config_manager = ConfigManager::new()?;
+        let config = config_manager.load_config()?;
+
+        // 检查是否是别名
+        if let Some(tool_id) = config.settings.aliases.get(&self.tool) {
+            return Ok(tool_id.clone());
+        }
+
+        // 返回原始输入
+        Ok(self.tool.clone())
+    }
+
     pub fn execute(&self) -> Result<()> {
         let registry = Registry::load()?;
 
+        // 解析别名
+        let tool_id = self.resolve_tool_id()?;
+
         // 查找工具
-        let tool_def = registry.find_by_id(&self.tool)
-            .or_else(|| registry.find_by_name(&self.tool).first().copied());
+        let tool_def = registry.find_by_id(&tool_id)
+            .or_else(|| registry.find_by_name(&tool_id).first().copied());
 
         let tool_def = match tool_def {
             Some(t) => t,

@@ -158,5 +158,128 @@ pub enum Commands {
         /// Show only tools with free pro-grade models
         #[arg(short, long)]
         pro: bool,
+
+        /// Aggregate all free quotas
+        #[arg(long)]
+        aggregate: bool,
     },
+
+    /// Manage tool aliases
+    Alias {
+        /// Alias name (for set/remove) or list to show all
+        alias: Option<String>,
+
+        /// Tool ID to map to (for set)
+        tool: Option<String>,
+
+        /// Remove an alias
+        #[arg(short, long)]
+        remove: bool,
+    },
+
+    /// Compare multiple tools
+    Compare {
+        /// Tool IDs to compare (space-separated)
+        #[arg(required = true)]
+        tools: Vec<String>,
+    },
+
+    /// Manage quota tracking and limits
+    Quota {
+        /// Quota action: status, warn, limit, usage, reset
+        #[arg(value_name = "ACTION")]
+        action: Option<String>,
+
+        /// Threshold value for warn/limit (0-100)
+        #[arg(value_name = "VALUE")]
+        value: Option<u8>,
+
+        /// Tool ID for usage/reset
+        #[arg(short, long)]
+        tool: Option<String>,
+    },
+
+    /// Show usage statistics
+    Stats,
+
+    /// Show cost estimation
+    Cost,
+
+    /// Manage project-level configuration
+    Project {
+        /// Project action: init, status, use, path
+        #[arg(value_name = "ACTION")]
+        action: Option<String>,
+
+        /// Tool ID for 'use' action
+        #[arg(value_name = "TOOL")]
+        tool: Option<String>,
+
+        /// Model for 'use' action
+        #[arg(short, long)]
+        model: Option<String>,
+    },
+
+    /// Manage smart fallback chains
+    Fallback {
+        /// Fallback action: status, add, remove
+        #[arg(value_name = "ACTION")]
+        action: Option<String>,
+
+        /// Primary tool ID
+        #[arg(value_name = "PRIMARY")]
+        primary: Option<String>,
+
+        /// Fallback tool IDs
+        #[arg(value_name = "FALLBACKS")]
+        fallbacks: Vec<String>,
+
+        /// Enable fallback
+        #[arg(long)]
+        enable: bool,
+
+        /// Disable fallback
+        #[arg(long)]
+        disable: bool,
+    },
+
+    /// Manage multiple API keys/accounts
+    Key {
+        /// Key action: list, add, remove, switch, rotate, current
+        #[arg(value_name = "ACTION")]
+        action: Option<String>,
+
+        /// Tool ID
+        #[arg(value_name = "TOOL")]
+        tool: Option<String>,
+
+        /// Key name
+        #[arg(value_name = "NAME")]
+        name: Option<String>,
+
+        /// Key value (for add)
+        #[arg(value_name = "KEY")]
+        key: Option<String>,
+
+        /// Enable rotation
+        #[arg(long)]
+        enable: bool,
+
+        /// Disable rotation
+        #[arg(long)]
+        disable: bool,
+    },
+
+    /// Get tool recommendations
+    Recommend {
+        /// Filter by tag
+        #[arg(short, long)]
+        tag: Option<String>,
+    },
+
+    /// Show trending tools
+    Trending,
+
+    /// Show new tools
+    New,
 }

@@ -181,6 +181,8 @@ vcm run claude-code
 
 ## 命令参考
 
+### 基础命令
+
 | 命令 | 描述 |
 |-----|------|
 | `vcm scan` | 扫描已安装的 AI 编程工具 |
@@ -199,6 +201,23 @@ vcm run claude-code
 | `vcm init` | 交互式初始化向导 |
 | `vcm usage` | 显示使用统计 |
 | `vcm lang [en\|zh]` | 设置语言 |
+
+### v2.0 新增命令
+
+| 命令 | 描述 |
+|-----|------|
+| `vcm alias <name> <tool>` | 设置工具别名快速启动 |
+| `vcm compare <t1> <t2>...` | 多工具横向对比 |
+| `vcm free --aggregate` | 聚合显示所有免费额度 |
+| `vcm quota status` | 监控配额使用量 |
+| `vcm stats` | 显示使用统计 |
+| `vcm cost` | 估算 API 成本 |
+| `vcm project init` | 初始化项目级配置 |
+| `vcm fallback add <primary> <fallback>` | 设置降级链 |
+| `vcm key add <tool> <name> <key>` | 管理多个 API Key |
+| `vcm recommend` | 获取个性化推荐 |
+| `vcm trending` | 显示热门工具 |
+| `vcm new` | 显示新上架工具 |
 
 ### 全局选项
 
@@ -310,6 +329,166 @@ vcm free --pro
 | Gemini 3 Pro | 76.2% | Google |
 | Gemini 2.5 Pro | 63.2% | Google |
 | Qwen3-Coder-480B | 69.6% | Alibaba |
+
+---
+
+## v2.0 新功能
+
+### 工具别名
+
+设置简短别名快速启动工具：
+
+```bash
+# 设置别名
+vcm alias cc claude-code
+
+# 现在可以直接使用
+vcm cc
+```
+
+### 工具对比
+
+横向对比多个工具：
+
+```bash
+vcm compare gemini-cli claude-code aider
+```
+
+输出：
+```
+工具对比
+══════════════════════════════════════════════════════════════════
+特性          │Gemini CLI        │Claude Code       │Aider
+────────────────────────────────────────────────────────────────────
+供应商         │Google            │Anthropic         │Open Source
+免费额度        │100 requests/...  │付费               │Unlimited...
+专业模型        │Gemini 2.5 Pro... │-                  │Qwen3-Coder...
+需信用卡        │否                 │否                 │否
+```
+
+### 免费额度聚合
+
+一站式查看所有免费额度：
+
+```bash
+vcm free --aggregate
+```
+
+输出：
+```
+🎁 免费额度聚合面板
+
+工具                   免费额度                      专业级模型                状态
+────────────────────────────────────────────────────────────────────────
+Gemini CLI           100 requests/day            Gemini 2.5 Pro       ✓ 已安装
+Kiro                 50 credits/month            Claude 4 Sonnet      ✓ 已安装
+Ollama               Unlimited - runs locally    Qwen2.5-Coder        ✓ 已安装
+
+📊 聚合统计
+  • 有免费额度的工具: 9 个
+  • 提供专业级模型的工具: 9 个
+  • 可免费使用的专业级模型: 19 个
+```
+
+### 配额追踪
+
+监控使用量并设置警报：
+
+```bash
+# 查看配额状态
+vcm quota status
+
+# 设置警告阈值 (80%)
+vcm quota warn 80
+
+# 设置硬限制 (100%)
+vcm quota limit 100
+```
+
+### 使用统计与成本估算
+
+追踪工具使用情况：
+
+```bash
+# 显示使用统计
+vcm stats
+
+# 估算 API 成本
+vcm cost
+```
+
+### 项目级配置
+
+为每个项目单独配置工具：
+
+```bash
+# 初始化项目配置
+vcm project init
+
+# 设置项目默认工具
+vcm project use claude-code --model claude-sonnet-4
+
+# 查看项目配置
+vcm project status
+```
+
+在项目中创建 `.vcm/config.toml`：
+```toml
+name = "my-project"
+default_tool = "claude-code"
+
+[tools.claude-code]
+model = "claude-sonnet-4"
+```
+
+### 智能降级链
+
+主力工具不可用时自动切换到备选：
+
+```bash
+# 添加降级链: claude-code → gemini-cli → ollama
+vcm fallback add claude-code gemini-cli ollama
+
+# 启用降级
+vcm fallback --enable
+```
+
+### 多账号管理
+
+为同一工具管理多个 API Key：
+
+```bash
+# 添加 Key
+vcm key add claude-code personal sk-ant-xxx
+vcm key add claude-code work sk-ant-yyy
+
+# 列出所有 Key
+vcm key list
+
+# 切换激活的 Key
+vcm key switch claude-code work
+
+# 启用 Key 轮换
+vcm key rotate claude-code --enable
+```
+
+### 工具推荐
+
+发现新工具：
+
+```bash
+# 个性化推荐
+vcm recommend
+
+# 热门工具
+vcm trending
+
+# 新上架工具
+vcm new
+
+# 按标签筛选
+vcm recommend --tag coding
+```
 
 ---
 
