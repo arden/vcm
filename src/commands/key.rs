@@ -1,6 +1,7 @@
 //! 多账号/多 Key 管理命令
 
 use crate::core::{ConfigManager, Registry};
+use crate::i18n::translate;
 use anyhow::{bail, Result};
 use console::style;
 use serde::{Deserialize, Serialize};
@@ -151,12 +152,12 @@ impl KeyCommand {
         let config = self.load_keys_config(config_manager)?;
         let registry = Registry::load()?;
 
-        println!("\n{}", style("🔑 多账号管理").cyan().bold());
+        println!("\n{}", style(format!("🔑 {}", translate("key.title"))).cyan().bold());
         println!("{}", "═".repeat(70));
 
         if config.tools.is_empty() {
-            println!("\n暂无保存的 Key 配置");
-            println!("\n提示: 使用 'vcm key add <tool> <name> <key>' 添加账号");
+            println!("\n{}", translate("key.no_config"));
+            println!("\n{}", translate("key.add_hint"));
             return Ok(());
         }
 
@@ -169,7 +170,7 @@ impl KeyCommand {
         };
 
         if tools_to_show.is_empty() {
-            println!("\n未找到 '{}' 的 Key 配置", tool_filter.as_ref().unwrap());
+            println!("\n{}", translate("key.not_found").replace("{}", tool_filter.as_ref().unwrap()));
             return Ok(());
         }
 
@@ -182,28 +183,28 @@ impl KeyCommand {
             println!("  {}", "─".repeat(50));
 
             if let Some(ref active) = tool_keys.active {
-                println!("  当前激活: {}", style(active).green().bold());
+                println!("  {}: {}", translate("key.active"), style(active).green().bold());
             }
 
             if !tool_keys.keys.is_empty() {
                 println!("\n  {:<15} {:<10} {:<12} {}",
-                    style("名称").dim(),
-                    style("状态").dim(),
-                    style("类型").dim(),
-                    style("备注").dim()
+                    style(translate("key.name")).dim(),
+                    style(translate("key.status")).dim(),
+                    style(translate("key.type")).dim(),
+                    style(translate("key.note")).dim()
                 );
 
                 for (name, info) in &tool_keys.keys {
                     let status = if tool_keys.active.as_ref() == Some(name) {
-                        style("✓ 激活").green()
+                        style(format!("✓ {}", translate("key.active"))).green().to_string()
                     } else {
-                        style("-").dim()
+                        style("-").dim().to_string()
                     };
 
                     let key_type = if info.is_trial {
-                        style("试用").yellow()
+                        style(translate("key.type_trial")).yellow()
                     } else {
-                        style("正式").cyan()
+                        style(translate("key.official")).cyan()
                     };
 
                     let note = info.note.as_deref().unwrap_or("-");
@@ -221,21 +222,21 @@ impl KeyCommand {
             if let Some(ref rotation) = tool_keys.rotation {
                 if rotation.enabled {
                     let interval = match rotation.interval {
-                        RotationInterval::PerRequest => "每次请求",
-                        RotationInterval::Hourly => "每小时",
-                        RotationInterval::Daily => "每天",
-                        RotationInterval::Weekly => "每周",
+                        RotationInterval::PerRequest => translate("key.per_request"),
+                        RotationInterval::Hourly => translate("key.hourly"),
+                        RotationInterval::Daily => translate("key.daily"),
+                        RotationInterval::Weekly => translate("key.weekly"),
                     };
-                    println!("\n  轮换模式: {} ({})", style("✓ 启用").green(), interval);
+                    println!("\n  {}: {} ({})", translate("key.rotation_mode"), style(format!("✓ {}", translate("fallback.enabled"))).green(), interval);
                 }
             }
         }
 
         println!("{}", "═".repeat(70));
-        println!("\n命令: vcm key add <tool> <name> <key>   添加账号");
-        println!("      vcm key switch <tool> <name>       切换账号");
-        println!("      vcm key remove <tool> <name>       删除账号");
-        println!("      vcm key rotate <tool> --enable     启用轮换");
+        println!("\n{}", translate("key.add_cmd"));
+        println!("{}", translate("key.switch_cmd"));
+        println!("{}", translate("key.remove_cmd"));
+        println!("{}", translate("key.rotate_cmd"));
 
         Ok(())
     }
@@ -243,10 +244,10 @@ impl KeyCommand {
     /// 添加 Key
     fn add_key(&self, config_manager: &ConfigManager, tool: &str, name: &str, key: &str) -> Result<()> {
         if name.is_empty() {
-            bail!("Key 名称不能为空");
+            bail!("{}", translate("key.name_empty"));
         }
         if key.is_empty() {
-            bail!("Key 值不能为空");
+            bail!("{}", translate("key.value_empty"));
         }
 
         let registry = Registry::load()?;
@@ -264,7 +265,7 @@ impl KeyCommand {
 
         // 检查是否已存在
         if tool_keys.keys.contains_key(name) {
-            println!("{} Key '{}' 已存在，将被覆盖", style("⚠️").yellow(), name);
+            println!("{} {}", style("⚠️").yellow(), translate("key.exists").replace("{}", name));
         }
 
         // 添加 Key
@@ -288,10 +289,10 @@ impl KeyCommand {
         self.save_keys_config(config_manager, &config)?;
 
         let tool_name = tool_def.map(|t| t.name.as_str()).unwrap_or(tool);
-        println!("{} 已添加 Key '{}' 到 {}", style("✓").green(), style(name).cyan(), tool_name);
+        println!("{} {}", style("✓").green(), translate("key.added").replace("{}", name).replace("{tool}", tool_name));
 
         if is_active {
-            println!("  已设为当前激活账号");
+            println!("  {}", translate("key.set_active"));
         }
 
         Ok(())
@@ -302,21 +303,21 @@ impl KeyCommand {
         let mut config = self.load_keys_config(config_manager)?;
 
         let tool_keys = config.tools.get_mut(tool)
-            .ok_or_else(|| anyhow::anyhow!("工具 '{}' 没有保存的 Key", tool))?;
+            .ok_or_else(|| anyhow::anyhow!("{}", translate("key.no_saved").replace("{}", tool)))?;
 
         if tool_keys.keys.remove(name).is_some() {
             // 如果删除的是激活的 Key，切换到其他
             if tool_keys.active.as_ref() == Some(&name.to_string()) {
                 tool_keys.active = tool_keys.keys.keys().next().cloned();
                 if let Some(ref new_active) = tool_keys.active {
-                    println!("{} 已切换激活账号到: {}", style("→").yellow(), new_active);
+                    println!("{} {}", style("→").yellow(), translate("key.switched").replace("{}", new_active));
                 }
             }
 
             self.save_keys_config(config_manager, &config)?;
-            println!("{} 已删除 Key: {}", style("✓").green(), name);
+            println!("{} {}", style("✓").green(), translate("key.removed"));
         } else {
-            println!("未找到 Key: {}", name);
+            println!("{}", translate("key.not_found_name"));
         }
 
         Ok(())
@@ -327,17 +328,17 @@ impl KeyCommand {
         let mut config = self.load_keys_config(config_manager)?;
 
         let tool_keys = config.tools.get_mut(tool)
-            .ok_or_else(|| anyhow::anyhow!("工具 '{}' 没有保存的 Key", tool))?;
+            .ok_or_else(|| anyhow::anyhow!("{}", translate("key.no_saved").replace("{}", tool)))?;
 
         if !tool_keys.keys.contains_key(name) {
-            bail!("Key '{}' 不存在", name);
+            bail!("{}", translate("key.not_found_name"));
         }
 
         tool_keys.active = Some(name.to_string());
         self.save_keys_config(config_manager, &config)?;
 
-        println!("{} 已切换到账号: {}", style("✓").green(), style(name).cyan());
-        println!("\n提示: 重启工具后生效");
+        println!("{} {}: {}", style("✓").green(), translate("key.switched"), style(name).cyan());
+        println!("\n{}", translate("key.restart_hint"));
 
         Ok(())
     }
@@ -354,8 +355,8 @@ impl KeyCommand {
             });
 
         if enable && tool_keys.keys.len() < 2 {
-            println!("{} 启用轮换需要至少 2 个 Key", style("⚠️").yellow());
-            println!("当前只有 {} 个 Key", tool_keys.keys.len());
+            println!("{} {}", style("⚠️").yellow(), translate("key.rotate_need_two"));
+            println!("{}", translate("key.current_count").replace("{}", &tool_keys.keys.len().to_string()));
             return Ok(());
         }
 
@@ -368,10 +369,10 @@ impl KeyCommand {
         self.save_keys_config(config_manager, &config)?;
 
         if enable {
-            println!("{} 已启用 Key 轮换", style("✓").green());
-            println!("\n每次请求将使用不同的 Key");
+            println!("{} {}", style("✓").green(), translate("key.rotation_enabled"));
+            println!("\n{}", translate("key.rotation_desc"));
         } else {
-            println!("{} 已禁用 Key 轮换", style("✓").yellow());
+            println!("{} {}", style("✓").yellow(), translate("key.rotation_disabled"));
         }
 
         Ok(())
@@ -388,24 +389,24 @@ impl KeyCommand {
 
         if let Some(tool_keys) = config.tools.get(tool) {
             if let Some(ref active) = tool_keys.active {
-                println!("{} 当前激活: {}", style(tool_name).cyan(), style(active).green().bold());
+                println!("{} {}: {}", style(tool_name).cyan(), translate("key.current_active"), style(active).green().bold());
 
                 if let Some(info) = tool_keys.keys.get(active) {
                     if let Some(ref note) = info.note {
-                        println!("  备注: {}", note);
+                        println!("  {}: {}", translate("key.note"), note);
                     }
                     if info.is_trial {
-                        println!("  类型: 试用");
+                        println!("  {}: {}", translate("key.type"), translate("key.type_trial"));
                         if let Some(ref expires) = info.expires {
-                            println!("  过期: {}", expires);
+                            println!("  {}: {}", translate("key.expires"), expires);
                         }
                     }
                 }
             } else {
-                println!("{} 未设置激活账号", tool_name);
+                println!("{} {}", tool_name, translate("key.no_active"));
             }
         } else {
-            println!("{} 没有保存的 Key", tool_name);
+            println!("{} {}", tool_name, translate("key.no_saved"));
         }
 
         Ok(())

@@ -75,7 +75,7 @@ impl FreeCommand {
 
     /// 聚合视图（新功能）
     fn print_aggregate_view(&self, registry: &Registry) -> Result<()> {
-        println!("\n{}", style("🎁 免费额度聚合面板").cyan().bold());
+        println!("\n{}", style(format!("🎁 {}", translate("free.aggregate_title"))).cyan().bold());
         println!("{}", "═".repeat(80));
 
         // 筛选有免费额度的工具
@@ -90,7 +90,7 @@ impl FreeCommand {
             .collect();
 
         if free_tools.is_empty() {
-            println!("未找到有免费额度的工具");
+            println!("{}", translate("free.no_free_tools"));
             return Ok(());
         }
 
@@ -104,10 +104,10 @@ impl FreeCommand {
 
         // 表头
         println!("\n{:<20} {:<25} {:<20} {:<12}", 
-            style("工具").bold(), 
-            style("免费额度").bold(), 
-            style("专业级模型").bold(),
-            style("状态").bold()
+            style(translate("label.tool")).bold(), 
+            style(translate("free.limit")).bold(), 
+            style(translate("free.pro_models")).bold(),
+            style(translate("label.status")).bold()
         );
         println!("{}", "─".repeat(80));
 
@@ -118,7 +118,7 @@ impl FreeCommand {
             let pricing = tool.pricing.as_ref().unwrap();
 
             // 免费额度
-            let free_limit = pricing.free_limit.as_deref().unwrap_or("有");
+            let free_limit = pricing.free_limit.clone().unwrap_or_else(|| translate("pricing.free"));
 
             // 专业级模型
             let pro_models: Vec<_> = pricing.free_models.iter()
@@ -138,14 +138,15 @@ impl FreeCommand {
 
             // 状态
             let status = if tool.is_installed() {
-                style("✓ 已安装").green().to_string()
+                style(format!("✓ {}", translate("list.installed"))).green().to_string()
             } else {
-                style("未安装").dim().to_string()
+                style(translate("list.not_installed")).dim().to_string()
             };
 
             // 截断过长的模型列表
-            let display_models = if pro_models_str.len() > 18 {
-                format!("{}...", &pro_models_str[..15])
+            let display_models = if pro_models_str.chars().count() > 18 {
+                let chars: Vec<char> = pro_models_str.chars().collect();
+                format!("{}...", chars[..15].iter().collect::<String>())
             } else {
                 pro_models_str
             };
@@ -160,13 +161,13 @@ impl FreeCommand {
 
         // 聚合统计
         println!("{}", "═".repeat(80));
-        println!("\n{}", style("📊 聚合统计").bold());
-        println!("  • 有免费额度的工具: {} 个", sorted_tools.len());
-        println!("  • 提供专业级模型的工具: {} 个", style(total_pro_tools).green());
-        println!("  • 可免费使用的专业级模型: {} 个", style(total_free_models).green());
+        println!("\n{}", style(format!("📊 {}", translate("free.aggregate_stats"))).bold());
+        println!("  • {}: {}", translate("free.tools_with_free"), sorted_tools.len());
+        println!("  • {}: {}", translate("free.tools_with_pro"), style(total_pro_tools).green());
+        println!("  • {}: {}", translate("free.free_pro_models"), style(total_free_models).green());
 
         // 优化建议
-        println!("\n{}", style("💡 最优免费组合策略").bold());
+        println!("\n{}", style(format!("💡 {}", translate("free.optimal_strategy"))).bold());
 
         // 推荐最佳组合
         let best_free_tools: Vec<_> = sorted_tools.iter()
@@ -178,23 +179,26 @@ impl FreeCommand {
             .collect();
 
         if !best_free_tools.is_empty() {
-            println!("  推荐组合:");
+            println!("  {}:", translate("free.recommended_combo"));
             for (i, tool) in best_free_tools.iter().enumerate() {
                 let pricing = tool.pricing.as_ref().unwrap();
+                let pro_model_default = translate("free.pro_models");
                 let pro_model = pricing.free_pro_models().first()
                     .map(|m| m.name.as_str())
-                    .unwrap_or("专业模型");
+                    .unwrap_or(&pro_model_default);
+                let free_limit_default = translate("pricing.free");
+                let free_limit_display = pricing.free_limit.as_deref().unwrap_or(&free_limit_default);
                 println!("    {}. {} - {} ({})",
                     i + 1,
                     style(&tool.name).cyan(),
                     style(pro_model).green(),
-                    pricing.free_limit.as_deref().unwrap_or("免费")
+                    free_limit_display
                 );
             }
         }
 
-        println!("\n  提示: 使用 'vcm compare <tool1> <tool2>...' 对比多个工具");
-        println!("        使用 'vcm free --pro' 只显示专业级模型\n");
+        println!("\n  {}", translate("free.compare_hint"));
+        println!("  {}\n", translate("free.pro_only_hint"));
 
         Ok(())
     }
@@ -212,7 +216,7 @@ impl FreeCommand {
             println!("{} {} {}",
                 style("★").yellow(),
                 style(&tool.name).bold().green(),
-                style(&format!("[{}]", translate("free.best_choice"))).yellow()
+                style(format!("[{}]", translate("free.best_choice"))).yellow()
             );
         } else {
             println!("{}", style(&tool.name).bold());

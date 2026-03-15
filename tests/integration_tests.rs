@@ -54,6 +54,7 @@ mod tests {
             is_cli: true,
             is_gui: false,
             featured: false,
+            pricing: None,
         };
 
         // 序列化

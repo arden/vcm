@@ -2,7 +2,7 @@
 
 use crate::i18n::{self, Language};
 use crate::core::ConfigManager;
-use anyhow::{bail, Result};
+use anyhow::Result;
 use console::style;
 
 /// lang 命令
@@ -33,7 +33,7 @@ impl LangCommand {
             }
             Some(lang_str) => {
                 // 设置语言
-                let new_lang = Language::from_str(lang_str)
+                let new_lang = Language::parse(lang_str)
                     .ok_or_else(|| anyhow::anyhow!("Unknown language: {}. Supported: en, zh", lang_str))?;
 
                 // 保存到配置

@@ -9,6 +9,12 @@ use console::style;
 /// usage 命令
 pub struct UsageCommand;
 
+impl Default for UsageCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl UsageCommand {
     pub fn new() -> Self {
         Self

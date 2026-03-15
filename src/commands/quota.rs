@@ -2,7 +2,6 @@
 
 use crate::core::{ConfigManager, Registry};
 use crate::i18n::translate;
-use crate::models::VcmConfig;
 use anyhow::{bail, Result};
 use console::style;
 use std::collections::HashMap;
@@ -37,9 +36,9 @@ pub struct ToolUsageRecord {
     pub month_count: u32,
     /// 总使用次数
     pub total_count: u64,
-    /// 今日日期 (YYYY-MM-DD)
+    /// 今日日期
     pub today_date: String,
-    /// 本月 (YYYY-MM)
+    /// 本月
     pub month_date: String,
     /// 最后使用时间
     pub last_used: Option<String>,
@@ -114,22 +113,22 @@ impl QuotaCommand {
     fn show_status(&self, quota_config: &QuotaConfig) -> Result<()> {
         let registry = Registry::load()?;
 
-        println!("\n{}", style("📊 配额监控面板").cyan().bold());
-        println!("{}", "═".repeat(80));
+        println!("\n{}", style(format!("📊 {}", translate("quota.title"))).cyan().bold());
+        println!("{}", "═".repeat(90));
 
         // 获取当前日期
         let today = chrono::Local::now().format("%Y-%m-%d").to_string();
         let month = chrono::Local::now().format("%Y-%m").to_string();
 
         // 表头
-        println!("\n{:<18} {:<12} {:<12} {:<10} {:<10}", 
-            style("工具").bold(), 
-            style("今日").bold(), 
-            style("本月").bold(),
-            style("限额").bold(),
-            style("状态").bold()
+        println!("\n{:<18} {:<8} {:<8} {:<40} {:<12}", 
+            style(translate("quota.tool")).bold(), 
+            style(translate("quota.today")).bold(), 
+            style(translate("quota.month")).bold(),
+            style(translate("quota.limit_col")).bold(),
+            style(translate("quota.status")).bold()
         );
-        println!("{}", "─".repeat(80));
+        println!("{}", "─".repeat(90));
 
         // 只显示有使用记录或有限额的工具
         let mut tools_with_data: Vec<_> = registry.tools.iter()
@@ -166,20 +165,11 @@ impl QuotaCommand {
                 (0, 0)
             };
 
-            // 获取限额信息
+            // 获取限额信息 - 直接显示实际限额
             let limit_str = pricing
                 .and_then(|p| p.free_limit.as_ref())
-                .map(|l| {
-                    // 尝试解析限额数字
-                    if l.contains("/day") || l.contains("次/天") {
-                        "每日限制"
-                    } else if l.contains("/month") || l.contains("次/月") {
-                        "每月限制"
-                    } else {
-                        "有限额"
-                    }
-                })
-                .unwrap_or("无限制");
+                .cloned()
+                .unwrap_or_else(|| translate("quota.unlimited"));
 
             // 计算状态
             let status = self.calculate_status(today_count, month_count, pricing, quota_config);
@@ -187,7 +177,15 @@ impl QuotaCommand {
             // 计算今日使用百分比
             let percentage = self.calculate_percentage(today_count, pricing);
 
-            println!("{:<18} {:<12} {:<12} {:<10} {}",
+            // 截断过长的限额字符串
+            let display_limit = if limit_str.chars().count() > 35 {
+                let chars: Vec<char> = limit_str.chars().collect();
+                format!("{}...", chars[..32].iter().collect::<String>())
+            } else {
+                limit_str.clone()
+            };
+
+            println!("{:<18} {:<8} {:<8} {:<40} {}",
                 tool.name,
                 if today_count > 0 {
                     format!("{} ({:.0}%)", today_count, percentage)
@@ -195,28 +193,28 @@ impl QuotaCommand {
                     "0".to_string()
                 },
                 month_count,
-                style(limit_str).dim(),
+                style(display_limit).dim(),
                 status
             );
         }
 
         // 显示阈值设置
-        println!("{}", "─".repeat(80));
-        println!("\n{}", style("⚙️  阈值设置").bold());
+        println!("{}", "─".repeat(90));
+        println!("\n{}", style(format!("⚙️  {}", translate("quota.threshold_settings"))).bold());
         if let Some(warn) = quota_config.warn_threshold {
-            println!("  警告阈值: {}%", style(warn).yellow());
+            println!("  {}: {}%", translate("quota.warn_threshold"), style(warn).yellow());
         } else {
-            println!("  警告阈值: {} (未设置)", style("默认 80%").dim());
+            println!("  {}: {} ({})", translate("quota.warn_threshold"), style(&translate("quota.default_80")).dim(), translate("quota.not_set"));
         }
         if let Some(limit) = quota_config.hard_limit {
-            println!("  硬限制: {}% {}", style(limit).red(), style("(超限将阻止使用)").dim());
+            println!("  {}: {}% {}", translate("quota.hard_limit"), style(limit).red(), style(translate("quota.block_on_exceed")).dim());
         } else {
-            println!("  硬限制: {} (未设置)", style("禁用").dim());
+            println!("  {}: {} ({})", translate("quota.hard_limit"), style(&translate("quota.disabled")).dim(), translate("quota.not_set"));
         }
 
-        println!("\n{}", "═".repeat(80));
-        println!("\n提示: 使用 'vcm quota warn 80' 设置警告阈值");
-        println!("      使用 'vcm quota usage <tool>' 查看详细使用记录");
+        println!("\n{}", "═".repeat(90));
+        println!("\n{}", translate("quota.warn_hint"));
+        println!("{}", translate("quota.usage_hint"));
 
         Ok(())
     }
@@ -235,18 +233,18 @@ impl QuotaCommand {
 
         if let Some(limit) = hard_limit {
             if percentage >= limit as f32 {
-                return style("⛔ 超限").red().to_string();
+                return style("⛔ ".to_string() + &translate("status.error")).red().to_string();
             }
         }
 
         if percentage >= warn_threshold as f32 {
-            return style("⚠️  即将达到限额").yellow().to_string();
+            return style("⚠️  ".to_string() + &translate("status.warning")).yellow().to_string();
         }
 
         if today_count > 0 {
-            style("✓ 正常").green().to_string()
+            style("✓ ".to_string() + &translate("status.healthy")).green().to_string()
         } else {
-            style("- 未使用").dim().to_string()
+            style("- ".to_string() + &translate("quota.not_used")).dim().to_string()
         }
     }
 
@@ -265,17 +263,17 @@ impl QuotaCommand {
         threshold: u8,
     ) -> Result<()> {
         if threshold > 100 {
-            bail!("阈值必须在 0-100 之间");
+            bail!("{}", translate("quota.threshold_range"));
         }
 
         quota_config.warn_threshold = Some(threshold);
         self.save_quota_config(config_manager, quota_config)?;
 
-        println!("{} 警告阈值已设置为 {}%", 
+        println!("{} {}", 
             style("✓").green(), 
-            style(threshold).yellow()
+            translate("quota.warn_set").replace("{}", &threshold.to_string())
         );
-        println!("\n当使用量达到此阈值时，系统将显示警告提示");
+        println!("\n{}", translate("quota.warn_desc"));
 
         Ok(())
     }
@@ -290,22 +288,23 @@ impl QuotaCommand {
         match threshold {
             Some(t) => {
                 if t > 100 {
-                    bail!("阈值必须在 0-100 之间");
+                    bail!("{}", translate("quota.threshold_range"));
                 }
                 quota_config.hard_limit = Some(t);
                 self.save_quota_config(config_manager, quota_config)?;
-                println!("{} 硬限制已设置为 {}%", 
+                println!("{} {}", 
                     style("✓").green(), 
-                    style(t).red()
+                    translate("quota.limit_set").replace("{}", &t.to_string())
                 );
-                println!("\n{} 当使用量达到此阈值时，系统将阻止继续使用", 
-                    style("⚠️").yellow()
+                println!("\n{} {}", 
+                    style("⚠️").yellow(),
+                    translate("quota.limit_warning")
                 );
             }
             None => {
                 quota_config.hard_limit = None;
                 self.save_quota_config(config_manager, quota_config)?;
-                println!("{} 硬限制已禁用", style("✓").green());
+                println!("{} {}", style("✓").green(), translate("quota.limit_disabled"));
             }
         }
 
@@ -324,48 +323,48 @@ impl QuotaCommand {
 
                 let tool_def = match tool_def {
                     Some(t) => t,
-                    None => bail!("工具 '{}' 未找到", tool_id),
+                    None => bail!("{}", translate("tool.not_found").replace("{}", tool_id)),
                 };
 
                 let record = quota_config.usage_records.get(&tool_def.id);
                 
-                println!("\n{} {}", style("📊").dim(), style(format!("{} 使用记录", tool_def.name)).cyan().bold());
+                println!("\n{} {}", style("📊").dim(), style(translate("quota.usage_title").replace("{}", &tool_def.name)).cyan().bold());
                 println!("{}", "─".repeat(50));
 
                 if let Some(r) = record {
-                    println!("  今日使用: {} 次", r.today_count);
-                    println!("  本月使用: {} 次", r.month_count);
-                    println!("  总使用量: {} 次", r.total_count);
+                    println!("  {}: {} {}", translate("quota.today_usage"), r.today_count, translate("stats.times"));
+                    println!("  {}: {} {}", translate("quota.month_usage"), r.month_count, translate("stats.times"));
+                    println!("  {}: {} {}", translate("quota.total_usage"), r.total_count, translate("stats.times"));
                     if let Some(ref last) = r.last_used {
-                        println!("  最后使用: {}", last);
+                        println!("  {}: {}", translate("quota.last_used"), last);
                     }
                 } else {
-                    println!("  暂无使用记录");
+                    println!("  {}", translate("quota.no_records"));
                 }
 
                 // 显示限额信息
                 if let Some(pricing) = &tool_def.pricing {
                     if let Some(limit) = &pricing.free_limit {
-                        println!("\n  免费限额: {}", style(limit).cyan());
+                        println!("\n  {}: {}", translate("quota.free_limit"), style(limit).cyan());
                     }
                 }
             }
             None => {
                 // 显示所有工具的使用记录
-                println!("\n{}", style("📊 使用记录汇总").cyan().bold());
+                println!("\n{}", style(format!("📊 {}", translate("quota.summary_title"))).cyan().bold());
                 println!("{}", "═".repeat(80));
 
                 if quota_config.usage_records.is_empty() {
-                    println!("\n暂无使用记录");
-                    println!("\n提示: 使用 'vcm run <tool>' 启动工具时会自动记录使用量");
+                    println!("\n{}", translate("quota.no_records"));
+                    println!("\n{}", translate("quota.run_hint"));
                 } else {
                     let today = chrono::Local::now().format("%Y-%m-%d").to_string();
 
                     println!("\n{:<20} {:<10} {:<10} {:<10}", 
-                        style("工具").bold(),
-                        style("今日").bold(),
-                        style("本月").bold(),
-                        style("总计").bold()
+                        style(translate("quota.tool")).bold(),
+                        style(translate("quota.today")).bold(),
+                        style(translate("quota.month")).bold(),
+                        style(translate("quota.total_usage")).bold()
                     );
                     println!("{}", "─".repeat(60));
 
@@ -408,15 +407,15 @@ impl QuotaCommand {
             Some(tool_id) => {
                 if quota_config.usage_records.remove(tool_id).is_some() {
                     self.save_quota_config(config_manager, quota_config)?;
-                    println!("{} 已重置 '{}' 的使用记录", style("✓").green(), tool_id);
+                    println!("{} {}", style("✓").green(), translate("quota.reset_tool").replace("{}", tool_id));
                 } else {
-                    println!("工具 '{}' 没有使用记录", tool_id);
+                    println!("{}", translate("quota.no_records_for_tool").replace("{}", tool_id));
                 }
             }
             None => {
                 quota_config.usage_records.clear();
                 self.save_quota_config(config_manager, quota_config)?;
-                println!("{} 已重置所有使用记录", style("✓").green());
+                println!("{} {}", style("✓").green(), translate("quota.all_reset"));
             }
         }
 

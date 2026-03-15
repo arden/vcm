@@ -77,8 +77,8 @@ impl Backend for PipBackend {
 
         let stdout = String::from_utf8_lossy(&output.stdout);
         for line in stdout.lines() {
-            if line.starts_with("Version:") {
-                return Some(line["Version:".len()..].trim().to_string());
+            if let Some(stripped) = line.strip_prefix("Version:") {
+                return Some(stripped.trim().to_string());
             }
         }
         None

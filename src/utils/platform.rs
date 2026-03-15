@@ -62,7 +62,7 @@ pub fn shell_name() -> String {
     env::var("SHELL")
         .unwrap_or_else(|_| "bash".to_string())
         .split('/')
-        .last()
+        .next_back()
         .unwrap_or("bash")
         .to_string()
 }

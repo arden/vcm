@@ -8,6 +8,12 @@ use console::style;
 /// doctor 命令
 pub struct DoctorCommand;
 
+impl Default for DoctorCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DoctorCommand {
     pub fn new() -> Self {
         Self

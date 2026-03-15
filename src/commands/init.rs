@@ -10,6 +10,12 @@ use dialoguer::{Input, MultiSelect, Select};
 /// init 命令
 pub struct InitCommand;
 
+impl Default for InitCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl InitCommand {
     pub fn new() -> Self {
         Self
@@ -51,7 +57,7 @@ impl InitCommand {
                 .collect();
 
             let selections = MultiSelect::new()
-                .with_prompt(&translate("init.select_tools"))
+                .with_prompt(translate("init.select_tools"))
                 .items(&items)
                 .interact()?;
 
@@ -112,14 +118,14 @@ impl InitCommand {
 
         let options = vec![translate("init.yes_configure"), translate("init.later")];
         let configure = Select::new()
-            .with_prompt(&translate("init.configure_now"))
+            .with_prompt(translate("init.configure_now"))
             .items(&options)
             .interact()?;
 
         if configure == 0 {
             for (key_name, _desc) in &api_keys {
                 let key: String = Input::new()
-                    .with_prompt(&translate("init.input").replace("{}", key_name))
+                    .with_prompt(translate("init.input").replace("{}", key_name))
                     .interact()?;
                 
                 if !key.is_empty() {

@@ -1,7 +1,6 @@
 //! run 命令实现 - 启动 CLI AI 工具
 
 use crate::core::{ConfigManager, Registry};
-use crate::models::*;
 use crate::i18n::translate;
 use anyhow::{bail, Result};
 use console::style;

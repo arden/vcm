@@ -289,7 +289,7 @@ impl Default for ToolRegistry {
 }
 
 /// VCM 配置
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct VcmConfig {
     /// 设置
     #[serde(default)]
@@ -297,15 +297,6 @@ pub struct VcmConfig {
     /// 注册表配置
     #[serde(default)]
     pub registry: RegistryConfig,
-}
-
-impl Default for VcmConfig {
-    fn default() -> Self {
-        Self {
-            settings: Settings::default(),
-            registry: RegistryConfig::default(),
-        }
-    }
 }
 
 /// 设置

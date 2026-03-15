@@ -1,7 +1,8 @@
 //! 项目级配置命令
 
 use crate::core::Registry;
-use anyhow::{bail, Result};
+use crate::i18n::translate;
+use anyhow::Result;
 use console::style;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -108,7 +109,7 @@ impl ProjectCommand {
     /// 获取项目配置目录
     fn get_vcm_dir(&self) -> Result<PathBuf> {
         let project_root = self.find_project_root()
-            .ok_or_else(|| anyhow::anyhow!("未找到项目根目录。请确保在项目目录中运行此命令，或使用 'vcm project init' 初始化项目配置。"))?;
+            .ok_or_else(|| anyhow::anyhow!("{}", translate("project.not_found")))?;
 
         Ok(project_root.join(".vcm"))
     }
@@ -147,8 +148,8 @@ impl ProjectCommand {
         let vcm_dir = self.get_vcm_dir()?;
 
         if vcm_dir.exists() {
-            println!("{} 项目已初始化", style("✓").green());
-            println!("\n配置目录: {}", vcm_dir.display());
+            println!("{} {}", style("✓").green(), translate("project.initialized"));
+            println!("\n{}: {}", translate("project.config_dir"), vcm_dir.display());
             return Ok(());
         }
 
@@ -169,13 +170,13 @@ impl ProjectCommand {
 
         // 创建 .gitignore（忽略敏感配置）
         let gitignore_path = vcm_dir.join(".gitignore");
-        std::fs::write(&gitignore_path, "# 敏感配置\n*.local.toml\n*.env\n")?;
+        std::fs::write(&gitignore_path, "# sensitive\n*.local.toml\n*.env\n")?;
 
-        println!("{} 项目配置已初始化", style("✓").green());
-        println!("\n配置目录: {}", vcm_dir.display());
-        println!("\n下一步:");
-        println!("  • 使用 'vcm project use <tool>' 设置默认工具");
-        println!("  • 编辑 .vcm/config.toml 配置工具参数");
+        println!("{} {}", style("✓").green(), translate("project.initialized"));
+        println!("\n{}: {}", translate("project.config_dir"), vcm_dir.display());
+        println!("\n{}:", translate("project.next_steps"));
+        println!("  • {}", translate("project.use_hint"));
+        println!("  • {}", translate("project.edit_hint"));
 
         Ok(())
     }
@@ -186,30 +187,30 @@ impl ProjectCommand {
         let config = self.load_project_config()?;
         let registry = Registry::load()?;
 
-        println!("\n{}", style("📁 项目配置").cyan().bold());
+        println!("\n{}", style(format!("📁 {}", translate("project.title"))).cyan().bold());
         println!("{}", "═".repeat(60));
 
         // 项目名称
         if let Some(ref name) = config.name {
-            println!("  项目名称: {}", style(name).cyan());
+            println!("  {}: {}", translate("project.name"), style(name).cyan());
         }
 
         // 配置目录
-        println!("  配置目录: {}", style(vcm_dir.display()).dim());
+        println!("  {}: {}", translate("project.config_dir"), style(vcm_dir.display()).dim());
 
         // 默认工具
         if let Some(ref tool_id) = config.default_tool {
             let tool_name = registry.find_by_id(tool_id)
                 .map(|t| t.name.as_str())
                 .unwrap_or(tool_id);
-            println!("  默认工具: {} ({})", style(tool_name).green(), tool_id);
+            println!("  {}: {} ({})", translate("project.default_tool"), style(tool_name).green(), tool_id);
         } else {
-            println!("  默认工具: {}", style("未设置").dim());
+            println!("  {}: {}", translate("project.default_tool"), style(translate("project.not_set")).dim());
         }
 
         // 工具配置
         if !config.tools.is_empty() {
-            println!("\n{}", style("🔧 工具配置").bold());
+            println!("\n{}", style(format!("🔧 {}", translate("project.tool_config"))).bold());
             println!("{}", "─".repeat(60));
 
             for (tool_id, tool_config) in &config.tools {
@@ -219,11 +220,11 @@ impl ProjectCommand {
                 println!("  {}:", style(tool_name).cyan());
 
                 if let Some(ref model) = tool_config.model {
-                    println!("    模型: {}", style(model).yellow());
+                    println!("    {}: {}", translate("project.model"), style(model).yellow());
                 }
 
                 if !tool_config.env_vars.is_empty() {
-                    println!("    环境变量:");
+                    println!("    {}: ", translate("project.env_vars"));
                     for (key, _) in tool_config.env_vars.iter() {
                         println!("      - {}", key);
                     }
@@ -232,7 +233,7 @@ impl ProjectCommand {
         }
 
         println!("{}", "═".repeat(60));
-        println!("\n提示: 使用 'vcm project use <tool>' 设置默认工具");
+        println!("\n{}", translate("project.use_hint"));
 
         Ok(())
     }
@@ -248,8 +249,9 @@ impl ProjectCommand {
         let tool_id = match tool_def {
             Some(t) => t.id.clone(),
             None => {
-                println!("{} 工具 '{}' 未在注册表中找到，但仍会保存配置", 
-                    style("⚠️").yellow(), tool);
+                println!("{} {}", 
+                    style("⚠️").yellow(),
+                    translate("project.tool_not_found_warn").replace("{}", tool));
                 tool.to_string()
             }
         };
@@ -267,13 +269,13 @@ impl ProjectCommand {
         self.save_project_config(&config)?;
 
         let tool_name = tool_def.map(|t| t.name.as_str()).unwrap_or(&tool_id);
-        println!("{} 已设置项目默认工具: {}", style("✓").green(), style(tool_name).cyan());
+        println!("{} {}: {}", style("✓").green(), translate("project.default_set"), style(tool_name).cyan());
 
         if let Some(ref m) = model {
-            println!("    模型: {}", style(m).yellow());
+            println!("    {}: {}", translate("project.model"), style(m).yellow());
         }
 
-        println!("\n配置已保存到 .vcm/config.toml");
+        println!("\n{}", translate("project.config_saved"));
 
         Ok(())
     }
@@ -281,11 +283,11 @@ impl ProjectCommand {
     /// 显示项目路径
     fn show_path(&self) -> Result<()> {
         let vcm_dir = self.get_vcm_dir()?;
-        println!(".vcm 目录: {}", vcm_dir.display());
+        println!("{}: {}", translate("project.vcm_dir"), vcm_dir.display());
 
         let config_path = vcm_dir.join("config.toml");
         if config_path.exists() {
-            println!("配置文件: {}", config_path.display());
+            println!("{}: {}", translate("project.config_file"), config_path.display());
         }
 
         Ok(())

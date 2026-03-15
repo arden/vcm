@@ -1,6 +1,6 @@
 //! config 命令实现
 
-use crate::core::{ConfigManager, Discovery, Registry};
+use crate::core::{ConfigManager, Registry};
 use crate::models::*;
 use crate::i18n::translate;
 use anyhow::{bail, Result};
@@ -118,7 +118,7 @@ impl ConfigCommand {
 
             let options = vec![translate("config.update_key"), translate("config.view_files"), translate("config.back")];
             let selection = Select::new()
-                .with_prompt(&translate("config.select_action"))
+                .with_prompt(translate("config.select_action"))
                 .items(&options)
                 .interact()?;
 
@@ -155,7 +155,7 @@ impl ConfigCommand {
                 }
 
                 let key: String = Input::new()
-                    .with_prompt(&translate("config.input_prompt").replace("{}", &env_var.name))
+                    .with_prompt(translate("config.input_prompt").replace("{}", &env_var.name))
                     .interact()?;
 
                 // 写入到 shell 配置

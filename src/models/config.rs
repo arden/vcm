@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// VCM 状态
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct VcmState {
     /// 已安装工具
     #[serde(default)]
@@ -15,16 +15,6 @@ pub struct VcmState {
     /// 注册表版本
     #[serde(default)]
     pub registry_version: Option<String>,
-}
-
-impl Default for VcmState {
-    fn default() -> Self {
-        Self {
-            installed_tools: HashMap::new(),
-            last_scan: None,
-            registry_version: None,
-        }
-    }
 }
 
 /// 已安装工具状态

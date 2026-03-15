@@ -1,12 +1,10 @@
 //! export 命令实现 - 导出已安装工具列表
 
 use crate::core::{Discovery, Registry};
-use crate::models::*;
 use crate::i18n::translate;
 use anyhow::Result;
 use console::style;
 use std::fs;
-use std::path::Path;
 
 /// 导出数据结构
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

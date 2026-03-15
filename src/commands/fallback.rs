@@ -1,6 +1,7 @@
 //! 智能降级切换命令
 
 use crate::core::{ConfigManager, Registry};
+use crate::i18n::translate;
 use anyhow::{bail, Result};
 use console::style;
 use serde::{Deserialize, Serialize};
@@ -120,26 +121,26 @@ impl FallbackCommand {
         let config = self.load_fallback_config(config_manager)?;
         let registry = Registry::load()?;
 
-        println!("\n{}", style("🔄 智能降级配置").cyan().bold());
+        println!("\n{}", style(format!("🔄 {}", translate("fallback.title"))).cyan().bold());
         println!("{}", "═".repeat(70));
 
         // 全局状态
         let status = if config.enabled {
-            style("✓ 已启用").green()
+            style(format!("✓ {}", translate("fallback.enabled"))).green()
         } else {
-            style("✗ 未启用").dim()
+            style(format!("✗ {}", translate("fallback.disabled"))).dim()
         };
-        println!("\n  状态: {}", status);
+        println!("\n  {}: {}", translate("fallback.status"), status);
 
         // 默认降级链
         if let Some(ref chain) = config.default_chain {
-            println!("\n  {}", style("默认降级链:").bold());
+            println!("\n  {}:", style(translate("fallback.default_chain")).bold());
             self.print_chain(chain, &registry, "    ");
         }
 
         // 自定义降级链
         if !config.chains.is_empty() {
-            println!("\n  {}", style("自定义降级链:").bold());
+            println!("\n  {}:", style(translate("fallback.custom_chains")).bold());
 
             for (primary_id, chain) in &config.chains {
                 let primary_name = registry.find_by_id(primary_id)
@@ -156,9 +157,9 @@ impl FallbackCommand {
         println!("{}", "═".repeat(70));
 
         if !config.enabled {
-            println!("\n提示: 使用 'vcm fallback --enable' 启用智能降级");
+            println!("\n{}", translate("fallback.enable_hint"));
         }
-        println!("      使用 'vcm fallback add <primary> <fallback1> [fallback2]...' 添加降级链");
+        println!("{}", translate("fallback.add_hint"));
 
         Ok(())
     }
@@ -171,11 +172,11 @@ impl FallbackCommand {
                 .unwrap_or(tool_id);
 
             let icon = if i == 0 {
-                style("主力").green()
+                style(translate("fallback.primary")).green()
             } else if i == tools.len() - 1 {
-                style("兜底").yellow()
+                style(translate("fallback.fallback")).yellow()
             } else {
-                style("备选").cyan()
+                style(translate("fallback.backup")).cyan()
             };
 
             println!("{}{} {} ({})", indent, icon, style(tool_name).bold(), tool_id);
@@ -189,7 +190,7 @@ impl FallbackCommand {
     /// 添加降级链
     fn add_chain(&self, config_manager: &ConfigManager, primary: &str, fallbacks: &[String]) -> Result<()> {
         if fallbacks.is_empty() {
-            bail!("至少需要指定一个备选工具");
+            bail!("{}", translate("fallback.need_one_backup"));
         }
 
         let registry = Registry::load()?;
@@ -199,7 +200,7 @@ impl FallbackCommand {
             .or_else(|| registry.find_by_name(primary).first().copied());
 
         if primary_tool.is_none() {
-            println!("{} 主力工具 '{}' 未找到，但仍会保存配置", style("⚠️").yellow(), primary);
+            println!("{} {}", style("⚠️").yellow(), translate("fallback.primary_not_found").replace("{}", primary));
         }
 
         let mut config = self.load_fallback_config(config_manager)?;
@@ -218,9 +219,9 @@ impl FallbackCommand {
         self.save_fallback_config(config_manager, &config)?;
 
         let primary_name = primary_tool.map(|t| t.name.as_str()).unwrap_or(primary);
-        println!("{} 已添加降级链: {}", style("✓").green(), style(primary_name).cyan());
+        println!("{} {}: {}", style("✓").green(), translate("fallback.chain_added"), style(primary_name).cyan());
 
-        println!("\n  降级顺序:");
+        println!("\n  {}:", translate("fallback.order"));
         println!("    {} →", primary_name);
         for fallback in fallbacks {
             let fallback_name = registry.find_by_id(fallback)
@@ -230,8 +231,8 @@ impl FallbackCommand {
         }
 
         if !config.enabled {
-            println!("\n{} 智能降级当前未启用", style("⚠️").yellow());
-            println!("  使用 'vcm fallback --enable' 启用");
+            println!("\n{} {}", style("⚠️").yellow(), translate("fallback.not_enabled"));
+            println!("  {}", translate("fallback.use_enable"));
         }
 
         Ok(())
@@ -243,9 +244,9 @@ impl FallbackCommand {
 
         if config.chains.remove(primary).is_some() {
             self.save_fallback_config(config_manager, &config)?;
-            println!("{} 已移除 '{}' 的降级链", style("✓").green(), primary);
+            println!("{} {}", style("✓").green(), translate("fallback.chain_removed").replace("{}", primary));
         } else {
-            println!("未找到 '{}' 的降级链", primary);
+            println!("{}", translate("fallback.chain_not_found").replace("{}", primary));
         }
 
         Ok(())
@@ -258,10 +259,10 @@ impl FallbackCommand {
         self.save_fallback_config(config_manager, &config)?;
 
         if enabled {
-            println!("{} 智能降级已启用", style("✓").green());
-            println!("\n当主力工具不可用时，系统将自动切换到备选工具");
+            println!("{} {}", style("✓").green(), translate("fallback.enabled_msg"));
+            println!("\n{}", translate("fallback.auto_switch"));
         } else {
-            println!("{} 智能降级已禁用", style("✓").yellow());
+            println!("{} {}", style("✓").yellow(), translate("fallback.disabled_msg"));
         }
 
         Ok(())
@@ -270,17 +271,23 @@ impl FallbackCommand {
     /// 设置默认链
     fn set_default(&self, config_manager: &ConfigManager, tools: &[String]) -> Result<()> {
         if tools.len() < 2 {
-            bail!("默认降级链至少需要 2 个工具");
+            bail!("{}", translate("fallback.need_two_tools"));
         }
 
         let mut config = self.load_fallback_config(config_manager)?;
         config.default_chain = Some(tools.to_vec());
         self.save_fallback_config(config_manager, &config)?;
 
-        println!("{} 已设置默认降级链", style("✓").green());
-        println!("\n  降级顺序:");
+        println!("{} {}", style("✓").green(), translate("fallback.default_set"));
+        println!("\n  {}:", translate("fallback.order"));
         for (i, tool) in tools.iter().enumerate() {
-            let label = if i == 0 { "主力" } else if i == tools.len() - 1 { "兜底" } else { "备选" };
+            let label = if i == 0 { 
+                translate("fallback.primary") 
+            } else if i == tools.len() - 1 { 
+                translate("fallback.fallback") 
+            } else { 
+                translate("fallback.backup") 
+            };
             println!("    {} {} ({})", label, style(tool).cyan(), tool);
             if i < tools.len() - 1 {
                 println!("        ↓");

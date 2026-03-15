@@ -44,7 +44,7 @@ impl RemoveCommand {
         // 确认卸载
         if !self.force {
             let confirm = Confirm::new()
-                .with_prompt(&translate("remove.confirm").replace("{}", &style(&tool.name).cyan().to_string()))
+                .with_prompt(translate("remove.confirm").replace("{}", &style(&tool.name).cyan().to_string()))
                 .default(false)
                 .interact()?;
 
@@ -80,8 +80,8 @@ impl RemoveCommand {
     }
 
     fn do_remove(&self, manager: &PackageManager, package: &str) -> Result<()> {
-        let result = self.do_remove_silent(manager, package);
-        result
+        
+        self.do_remove_silent(manager, package)
     }
 
     fn do_remove_silent(&self, manager: &PackageManager, package: &str) -> Result<()> {

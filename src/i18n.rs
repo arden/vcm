@@ -11,8 +11,8 @@ pub enum Language {
 }
 
 impl Language {
-    /// 从字符串解析
-    pub fn from_str(s: &str) -> Option<Self> {
+    /// 从字符串解析语言
+    pub fn parse(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
             "en" | "english" => Some(Language::En),
             "zh" | "zh-cn" | "chinese" | "中文" => Some(Language::Zh),
@@ -37,6 +37,14 @@ impl Language {
     }
 }
 
+impl std::str::FromStr for Language {
+    type Err = ();
+    
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::parse(s).ok_or(())
+    }
+}
+
 /// 全局语言设置
 static CURRENT_LANG: OnceLock<Language> = OnceLock::new();
 
@@ -45,7 +53,7 @@ pub fn current_lang() -> Language {
     *CURRENT_LANG.get_or_init(|| {
         // 1. 检查环境变量
         if let Ok(lang) = std::env::var("VCM_LANG") {
-            if let Some(l) = Language::from_str(&lang) {
+            if let Some(l) = Language::parse(&lang) {
                 return l;
             }
         }
@@ -124,6 +132,8 @@ fn get_en_translations() -> &'static std::collections::HashMap<&'static str, &'s
         m.insert("msg.warning", "Warning");
         m.insert("msg.unknown", "Unknown");
         m.insert("msg.unknown_version", "Unknown");
+        m.insert("msg.yes", "Yes");
+        m.insert("msg.no", "No");
         
         // 标签
         m.insert("label.tool", "Tool");
@@ -157,6 +167,7 @@ fn get_en_translations() -> &'static std::collections::HashMap<&'static str, &'s
         // List 命令
         m.insert("list.title", "CLI AI Programming Tools ({} total)");
         m.insert("list.installed", "Installed");
+        m.insert("list.not_installed", "Not Installed");
         m.insert("list.recommended", "Recommended");
         m.insert("list.other", "Other Tools");
         m.insert("list.summary", "Installed: {} / {} ({}%)");
@@ -361,6 +372,17 @@ fn get_en_translations() -> &'static std::collections::HashMap<&'static str, &'s
         m.insert("free.card_required", "Card Required");
         m.insert("free.no_card", "No card");
         m.insert("free.card_needed", "Card needed");
+        m.insert("free.pro_models", "Pro Models");
+        m.insert("free.aggregate_title", "Free Quota Aggregate Panel");
+        m.insert("free.no_free_tools", "No tools with free quota found");
+        m.insert("free.aggregate_stats", "Aggregate Statistics");
+        m.insert("free.tools_with_free", "Tools with free quota");
+        m.insert("free.tools_with_pro", "Tools with pro models");
+        m.insert("free.free_pro_models", "Free pro models available");
+        m.insert("free.optimal_strategy", "Optimal Free Combination Strategy");
+        m.insert("free.recommended_combo", "Recommended combination");
+        m.insert("free.compare_hint", "Tip: Use 'vcm compare <tool1> <tool2>...' to compare tools");
+        m.insert("free.pro_only_hint", "Use 'vcm free --pro' to show pro models only");
         m.insert("free.install_hint", "Install: vcm install {}");
         m.insert("free.none_found", "No tools with free models found");
         m.insert("free.best_choice", "Best Free Choice!");
@@ -401,12 +423,215 @@ fn get_en_translations() -> &'static std::collections::HashMap<&'static str, &'s
         m.insert("alias.overwrite", "Alias '{}' already maps to '{}', updating to '{}'");
         m.insert("alias.hint", "Tip: Use 'vcm <alias>' to quickly launch a tool");
         m.insert("alias.hint_example", "Example: 'vcm cc' will launch claude-code (if alias cc is set)");
+        m.insert("alias.list_title", "Tool Alias List");
         
         // Compare command
         m.insert("compare.title", "Tool Comparison");
         m.insert("compare.min_tools", "At least two tools are required for comparison");
         m.insert("compare.max_tools", "Maximum 5 tools can be compared at once");
         m.insert("compare.tool_not_found", "Tool '{}' not found");
+        m.insert("compare.feature", "Feature");
+        m.insert("compare.vendor", "Vendor");
+        m.insert("compare.free_quota", "Free Quota");
+        m.insert("compare.pro_models", "Pro Models");
+        m.insert("compare.card_required", "Card Required");
+        m.insert("compare.install_method", "Install Method");
+        m.insert("compare.tags", "Tags");
+        m.insert("compare.model_details", "Available Model Details");
+        m.insert("compare.free_models", "Free Models");
+        m.insert("compare.paid_models", "Paid Models");
+        m.insert("compare.pro_grade", "Pro-Grade");
+        
+        // Quota command
+        m.insert("quota.title", "Quota Monitoring Panel");
+        m.insert("quota.threshold_settings", "Threshold Settings");
+        m.insert("quota.threshold_range", "Threshold must be between 0-100");
+        m.insert("quota.warn_threshold", "Warning Threshold");
+        m.insert("quota.hard_limit", "Hard Limit");
+        m.insert("quota.default_80", "Default 80%");
+        m.insert("quota.not_set", "Not Set");
+        m.insert("quota.disabled", "Disabled");
+        m.insert("quota.block_on_exceed", "(Will block on exceed)");
+        m.insert("quota.warn_hint", "Tip: Use 'vcm quota warn 80' to set warning threshold");
+        m.insert("quota.usage_hint", "      Use 'vcm quota usage <tool>' to view detailed usage records");
+        m.insert("quota.warn_set", "Warning threshold set to {}%");
+        m.insert("quota.warn_desc", "When usage reaches this threshold, a warning will be displayed");
+        m.insert("quota.limit_set", "Hard limit set to {}%");
+        m.insert("quota.limit_warning", "When usage reaches this threshold, the system will block further use");
+        m.insert("quota.limit_disabled", "Hard limit disabled");
+        m.insert("quota.usage_title", "{} Usage Records");
+        m.insert("quota.today_usage", "Today usage");
+        m.insert("quota.month_usage", "Month usage");
+        m.insert("quota.total_usage", "Total usage");
+        m.insert("quota.last_used", "Last used");
+        m.insert("quota.no_records", "No usage records");
+        m.insert("quota.free_limit", "Free Limit");
+        m.insert("quota.summary_title", "Usage Records Summary");
+        m.insert("quota.run_hint", "Tip: Use 'vcm run <tool>' to automatically record usage when launching tools");
+        m.insert("quota.reset_tool", "Usage records for '{}' have been reset");
+        m.insert("quota.no_records_for_tool", "Tool '{}' has no usage records");
+        m.insert("quota.all_reset", "All usage records have been reset");
+        m.insert("quota.tool", "Tool");
+        m.insert("quota.today", "Today");
+        m.insert("quota.month", "Month");
+        m.insert("quota.limit_col", "Limit");
+        m.insert("quota.status", "Status");
+        m.insert("quota.unlimited", "Limited");
+        m.insert("quota.daily_limit", "Daily Limit");
+        m.insert("quota.monthly_limit", "Monthly Limit");
+        m.insert("quota.not_used", "Not used");
+        
+        // Stats command
+        m.insert("stats.title", "Usage Statistics Panel");
+        m.insert("stats.no_records", "No usage records");
+        m.insert("stats.run_hint", "Tip: Usage is automatically recorded when launching tools with 'vcm run <tool>'");
+        m.insert("stats.today_ranking", "Today's Usage Ranking");
+        m.insert("stats.no_today", "No usage today");
+        m.insert("stats.month_stats", "Monthly Usage Statistics");
+        m.insert("stats.times", "times");
+        m.insert("stats.no_month", "No usage this month");
+        m.insert("stats.month_total", "Month total usage");
+        m.insert("stats.trend", "Usage Trend");
+        m.insert("stats.total_calls", "Total calls");
+        m.insert("stats.tools_used", "Tools used");
+        m.insert("stats.most_used", "Most used tool");
+        m.insert("stats.cost_hint", "Tip: Use 'vcm cost' to view cost estimation");
+        m.insert("stats.quota_hint", "      Use 'vcm quota usage' to view detailed usage records");
+        m.insert("cost.title", "Cost Estimation Report");
+        m.insert("cost.no_records", "No usage records, cannot estimate cost");
+        m.insert("cost.month_estimate", "Estimated monthly cost");
+        m.insert("cost.optimization", "Cost Optimization Suggestions");
+        m.insert("cost.register_free", "Register for {} tools' free quotas to save costs");
+        m.insert("cost.view_free", "Use 'vcm free --aggregate' to view all free quotas");
+        m.insert("cost.compare_hint", "Use 'vcm compare <tool1> <tool2>' to compare tool cost-effectiveness");
+        m.insert("cost.all_free", "All Free!");
+        m.insert("cost.use_free_quota", "Using free quota");
+        m.insert("cost.consider_free_alt", "Consider free alternatives");
+        
+        // Project command
+        m.insert("project.not_found", "Project root not found. Run this command in a project directory, or use 'vcm project init' to initialize.");
+        m.insert("project.initialized", "Project initialized");
+        m.insert("project.config_dir", "Config directory");
+        m.insert("project.next_steps", "Next steps");
+        m.insert("project.use_hint", "Use 'vcm project use <tool>' to set default tool");
+        m.insert("project.edit_hint", "Edit .vcm/config.toml to configure tool parameters");
+        m.insert("project.title", "Project Configuration");
+        m.insert("project.name", "Project Name");
+        m.insert("project.default_tool", "Default Tool");
+        m.insert("project.not_set", "Not set");
+        m.insert("project.tool_config", "Tool Configuration");
+        m.insert("project.model", "Model");
+        m.insert("project.env_vars", "Environment Variables");
+        m.insert("project.tool_not_found_warn", "Tool '{}' not found in registry, but configuration will still be saved");
+        m.insert("project.default_set", "Project default tool set");
+        m.insert("project.config_saved", "Configuration saved to .vcm/config.toml");
+        m.insert("project.vcm_dir", ".vcm directory");
+        m.insert("project.config_file", "Config file");
+        
+        // Fallback command
+        m.insert("fallback.title", "Smart Fallback Configuration");
+        m.insert("fallback.status", "Status");
+        m.insert("fallback.enabled", "Enabled");
+        m.insert("fallback.disabled", "Disabled");
+        m.insert("fallback.default_chain", "Default Fallback Chain");
+        m.insert("fallback.custom_chains", "Custom Fallback Chains");
+        m.insert("fallback.enable_hint", "Tip: Use 'vcm fallback --enable' to enable smart fallback");
+        m.insert("fallback.add_hint", "      Use 'vcm fallback add <primary> <fallback1> [fallback2]...' to add fallback chain");
+        m.insert("fallback.primary", "Primary");
+        m.insert("fallback.backup", "Backup");
+        m.insert("fallback.fallback", "Fallback");
+        m.insert("fallback.primary_not_found", "Primary tool '{}' not found, but configuration will still be saved");
+        m.insert("fallback.chain_added", "Fallback chain added");
+        m.insert("fallback.order", "Fallback order");
+        m.insert("fallback.not_enabled", "Smart fallback is not enabled");
+        m.insert("fallback.use_enable", "Use 'vcm fallback --enable' to enable");
+        m.insert("fallback.chain_removed", "Fallback chain for '{}' removed");
+        m.insert("fallback.chain_not_found", "No fallback chain found for '{}'");
+        m.insert("fallback.enabled_msg", "Smart fallback enabled");
+        m.insert("fallback.auto_switch", "When primary tool is unavailable, the system will automatically switch to backup tools");
+        m.insert("fallback.disabled_msg", "Smart fallback disabled");
+        m.insert("fallback.default_set", "Default fallback chain set");
+        m.insert("fallback.need_one_backup", "At least one backup tool is required");
+        m.insert("fallback.need_two_tools", "Default fallback chain needs at least 2 tools");
+        
+        // Key command
+        m.insert("key.title", "Multi-Account Management");
+        m.insert("key.no_config", "No saved key configuration");
+        m.insert("key.add_hint", "Tip: Use 'vcm key add <tool> <name> <key>' to add an account");
+        m.insert("key.not_found", "No key configuration found for '{}'");
+        m.insert("key.active", "Active");
+        m.insert("key.rotation_mode", "Rotation mode");
+        m.insert("key.add_cmd", "Command: vcm key add <tool> <name> <key>   Add account");
+        m.insert("key.switch_cmd", "      vcm key switch <tool> <name>       Switch account");
+        m.insert("key.remove_cmd", "      vcm key remove <tool> <name>       Remove account");
+        m.insert("key.rotate_cmd", "      vcm key rotate <tool> --enable     Enable rotation");
+        m.insert("key.name_empty", "Key name cannot be empty");
+        m.insert("key.value_empty", "Key value cannot be empty");
+        m.insert("key.per_request", "Per request");
+        m.insert("key.hourly", "Hourly");
+        m.insert("key.daily", "Daily");
+        m.insert("key.weekly", "Weekly");
+        m.insert("key.exists", "Key '{}' already exists, will be overwritten");
+        m.insert("key.added", "Key '{}' added to {}");
+        m.insert("key.set_active", "Set as current active account");
+        m.insert("key.switched", "Account switched to");
+        m.insert("key.restart_hint", "Restart the tool for changes to take effect");
+        m.insert("key.removed", "Key removed");
+        m.insert("key.not_found_name", "Key not found");
+        m.insert("key.rotate_need_two", "Enabling rotation requires at least 2 keys");
+        m.insert("key.current_count", "Currently only {} key(s)");
+        m.insert("key.rotation_enabled", "Key rotation enabled");
+        m.insert("key.rotation_desc", "Each request will use a different key");
+        m.insert("key.rotation_disabled", "Key rotation disabled");
+        m.insert("key.current_active", "Current active");
+        m.insert("key.type_trial", "Trial");
+        m.insert("key.expires", "Expires");
+        m.insert("key.no_active", "No active account set");
+        m.insert("key.no_saved", "No saved keys");
+        m.insert("key.name", "Name");
+        m.insert("key.status", "Status");
+        m.insert("key.type", "Type");
+        m.insert("key.note", "Note");
+        m.insert("key.official", "Official");
+        
+        // Recommend command
+        m.insert("recommend.title", "Personalized Recommendations");
+        m.insert("recommend.based_usage", "Based on your usage habits and needs");
+        m.insert("recommend.install_free", "Recommended Installation (Free Pro-Grade Models)");
+        m.insert("recommend.hot", "Hot Recommendations");
+        m.insert("recommend.installed_overview", "Installed Overview");
+        m.insert("recommend.installed_count", "Installed: {} tools");
+        m.insert("recommend.configured_count", "Configured: {c} / {t}");
+        m.insert("recommend.some_unconfigured", "Some tools not configured, run 'vcm status' for details");
+        m.insert("recommend.trending_title", "Trending Tools Ranking");
+        m.insert("recommend.rank", "Rank");
+        m.insert("recommend.tool_col", "Tool");
+        m.insert("recommend.vendor_col", "Vendor");
+        m.insert("recommend.free_quota_col", "Free Quota");
+        m.insert("recommend.pro_free", "Pro-Grade Free");
+        m.insert("recommend.paid", "Paid");
+        m.insert("recommend.unknown", "Unknown");
+        m.insert("recommend.install_hint", "Use 'vcm install <tool>' to install");
+        m.insert("recommend.new_title", "Newly Added Tools");
+        m.insert("recommend.free_pro_models", "Free Pro-Grade Models");
+        m.insert("recommend.by_tag", "Filter by Tag");
+        m.insert("recommend.no_tag_tools", "No tools found with tag '{}'");
+        m.insert("recommend.available_tags", "Available tags: ai, coding, cli, llm, google, anthropic, opensource");
+        m.insert("recommend.found_tools", "Found {} tools");
+        m.insert("recommend.has_free_quota", "Has free quota");
+        m.insert("recommend.install", "Install");
+        
+        // Free --aggregate
+        m.insert("free.aggregate_title", "Free Quota Aggregation Panel");
+        m.insert("free.no_free_tools", "No tools with free quotas found");
+        m.insert("free.aggregate_stats", "Aggregation Statistics");
+        m.insert("free.tools_with_free", "Tools with free quotas");
+        m.insert("free.tools_with_pro", "Tools with pro-grade models");
+        m.insert("free.free_pro_models", "Free pro-grade models available");
+        m.insert("free.optimal_strategy", "Optimal Free Combination Strategy");
+        m.insert("free.recommended_combo", "Recommended Combination");
+        m.insert("free.compare_hint", "Tip: Use 'vcm compare <tool1> <tool2>...' to compare tools");
+        m.insert("free.pro_only_hint", "      Use 'vcm free --pro' to show only pro-grade models");
         
         m
     })
@@ -452,6 +677,8 @@ fn get_zh_translations() -> &'static std::collections::HashMap<&'static str, &'s
         m.insert("msg.warning", "警告");
         m.insert("msg.unknown", "未知");
         m.insert("msg.unknown_version", "未知");
+        m.insert("msg.yes", "是");
+        m.insert("msg.no", "否");
         
         // 标签
         m.insert("label.tool", "工具");
@@ -485,6 +712,7 @@ fn get_zh_translations() -> &'static std::collections::HashMap<&'static str, &'s
         // List 命令
         m.insert("list.title", "CLI AI 编程工具 (共 {} 个)");
         m.insert("list.installed", "已安装");
+        m.insert("list.not_installed", "未安装");
         m.insert("list.recommended", "热门推荐");
         m.insert("list.other", "其他工具");
         m.insert("list.summary", "已安装: {} / {} ({}%)");
@@ -689,6 +917,17 @@ fn get_zh_translations() -> &'static std::collections::HashMap<&'static str, &'s
         m.insert("free.card_required", "需要信用卡");
         m.insert("free.no_card", "无需信用卡");
         m.insert("free.card_needed", "需要信用卡");
+        m.insert("free.pro_models", "专业级模型");
+        m.insert("free.aggregate_title", "免费额度聚合面板");
+        m.insert("free.no_free_tools", "未找到有免费额度的工具");
+        m.insert("free.aggregate_stats", "聚合统计");
+        m.insert("free.tools_with_free", "有免费额度的工具");
+        m.insert("free.tools_with_pro", "提供专业级模型的工具");
+        m.insert("free.free_pro_models", "可免费使用的专业级模型");
+        m.insert("free.optimal_strategy", "最优免费组合策略");
+        m.insert("free.recommended_combo", "推荐组合");
+        m.insert("free.compare_hint", "提示: 使用 'vcm compare <tool1> <tool2>...' 对比多个工具");
+        m.insert("free.pro_only_hint", "使用 'vcm free --pro' 只显示专业级模型");
         m.insert("free.install_hint", "安装: vcm install {}");
         m.insert("free.none_found", "未找到支持免费模型的工具");
         m.insert("free.best_choice", "最佳免费选择!");
@@ -729,12 +968,215 @@ fn get_zh_translations() -> &'static std::collections::HashMap<&'static str, &'s
         m.insert("alias.overwrite", "别名 '{}' 已映射到 '{}'，将更新为 '{}'");
         m.insert("alias.hint", "提示: 使用 'vcm <alias>' 快速启动工具");
         m.insert("alias.hint_example", "示例: 'vcm cc' 将启动 claude-code (如果设置了别名 cc)");
+        m.insert("alias.list_title", "工具别名列表");
         
         // Compare 命令
         m.insert("compare.title", "工具对比");
         m.insert("compare.min_tools", "至少需要指定两个工具进行对比");
         m.insert("compare.max_tools", "最多支持同时对比 5 个工具");
         m.insert("compare.tool_not_found", "工具 '{}' 未找到");
+        m.insert("compare.feature", "特性");
+        m.insert("compare.vendor", "供应商");
+        m.insert("compare.free_quota", "免费额度");
+        m.insert("compare.pro_models", "专业模型");
+        m.insert("compare.card_required", "需信用卡");
+        m.insert("compare.install_method", "安装方式");
+        m.insert("compare.tags", "标签");
+        m.insert("compare.model_details", "可用模型详情");
+        m.insert("compare.free_models", "免费模型");
+        m.insert("compare.paid_models", "付费模型");
+        m.insert("compare.pro_grade", "专业级");
+        
+        // Quota 命令
+        m.insert("quota.title", "配额监控面板");
+        m.insert("quota.threshold_settings", "阈值设置");
+        m.insert("quota.threshold_range", "阈值必须在 0-100 之间");
+        m.insert("quota.warn_threshold", "警告阈值");
+        m.insert("quota.hard_limit", "硬限制");
+        m.insert("quota.default_80", "默认 80%");
+        m.insert("quota.not_set", "未设置");
+        m.insert("quota.disabled", "禁用");
+        m.insert("quota.block_on_exceed", "(超限将阻止使用)");
+        m.insert("quota.warn_hint", "提示: 使用 'vcm quota warn 80' 设置警告阈值");
+        m.insert("quota.usage_hint", "      使用 'vcm quota usage <tool>' 查看详细使用记录");
+        m.insert("quota.warn_set", "警告阈值已设置为 {}%");
+        m.insert("quota.warn_desc", "当使用量达到此阈值时，系统将显示警告提示");
+        m.insert("quota.limit_set", "硬限制已设置为 {}%");
+        m.insert("quota.limit_warning", "当使用量达到此阈值时，系统将阻止继续使用");
+        m.insert("quota.limit_disabled", "硬限制已禁用");
+        m.insert("quota.usage_title", "{} 使用记录");
+        m.insert("quota.today_usage", "今日使用");
+        m.insert("quota.month_usage", "本月使用");
+        m.insert("quota.total_usage", "总使用量");
+        m.insert("quota.last_used", "最后使用");
+        m.insert("quota.no_records", "暂无使用记录");
+        m.insert("quota.free_limit", "免费限额");
+        m.insert("quota.summary_title", "使用记录汇总");
+        m.insert("quota.run_hint", "提示: 使用 'vcm run <tool>' 启动工具时会自动记录使用量");
+        m.insert("quota.reset_tool", "已重置 '{}' 的使用记录");
+        m.insert("quota.no_records_for_tool", "工具 '{}' 没有使用记录");
+        m.insert("quota.all_reset", "已重置所有使用记录");
+        m.insert("quota.tool", "工具");
+        m.insert("quota.today", "今日");
+        m.insert("quota.month", "本月");
+        m.insert("quota.limit_col", "限额");
+        m.insert("quota.status", "状态");
+        m.insert("quota.unlimited", "有限额");
+        m.insert("quota.daily_limit", "每日限制");
+        m.insert("quota.monthly_limit", "每月限制");
+        m.insert("quota.not_used", "未使用");
+        
+        // Stats 命令
+        m.insert("stats.title", "使用统计面板");
+        m.insert("stats.no_records", "暂无使用记录");
+        m.insert("stats.run_hint", "提示: 使用 'vcm run <tool>' 启动工具时会自动记录使用量");
+        m.insert("stats.today_ranking", "今日使用排行");
+        m.insert("stats.no_today", "今日暂无使用记录");
+        m.insert("stats.month_stats", "本月使用统计");
+        m.insert("stats.times", "次");
+        m.insert("stats.no_month", "本月暂无使用记录");
+        m.insert("stats.month_total", "本月总使用");
+        m.insert("stats.trend", "使用趋势");
+        m.insert("stats.total_calls", "总调用次数");
+        m.insert("stats.tools_used", "使用过的工具");
+        m.insert("stats.most_used", "最常用工具");
+        m.insert("stats.cost_hint", "提示: 使用 'vcm cost' 查看成本估算");
+        m.insert("stats.quota_hint", "      使用 'vcm quota usage' 查看详细使用记录");
+        m.insert("cost.title", "成本估算报告");
+        m.insert("cost.no_records", "暂无使用记录，无法估算成本");
+        m.insert("cost.month_estimate", "本月估算总成本");
+        m.insert("cost.optimization", "成本优化建议");
+        m.insert("cost.register_free", "注册 {} 个工具的免费额度可节省成本");
+        m.insert("cost.view_free", "使用 'vcm free --aggregate' 查看所有免费额度");
+        m.insert("cost.compare_hint", "使用 'vcm compare <tool1> <tool2>' 对比工具性价比");
+        m.insert("cost.all_free", "全部免费!");
+        m.insert("cost.use_free_quota", "利用免费额度");
+        m.insert("cost.consider_free_alt", "考虑免费替代");
+        
+        // Project 命令
+        m.insert("project.not_found", "未找到项目根目录。请确保在项目目录中运行此命令，或使用 'vcm project init' 初始化项目配置。");
+        m.insert("project.initialized", "项目已初始化");
+        m.insert("project.config_dir", "配置目录");
+        m.insert("project.next_steps", "下一步");
+        m.insert("project.use_hint", "使用 'vcm project use <tool>' 设置默认工具");
+        m.insert("project.edit_hint", "编辑 .vcm/config.toml 配置工具参数");
+        m.insert("project.title", "项目配置");
+        m.insert("project.name", "项目名称");
+        m.insert("project.default_tool", "默认工具");
+        m.insert("project.not_set", "未设置");
+        m.insert("project.tool_config", "工具配置");
+        m.insert("project.model", "模型");
+        m.insert("project.env_vars", "环境变量");
+        m.insert("project.tool_not_found_warn", "工具 '{}' 未在注册表中找到，但仍会保存配置");
+        m.insert("project.default_set", "已设置项目默认工具");
+        m.insert("project.config_saved", "配置已保存到 .vcm/config.toml");
+        m.insert("project.vcm_dir", ".vcm 目录");
+        m.insert("project.config_file", "配置文件");
+        
+        // Fallback 命令
+        m.insert("fallback.title", "智能降级配置");
+        m.insert("fallback.status", "状态");
+        m.insert("fallback.enabled", "已启用");
+        m.insert("fallback.disabled", "未启用");
+        m.insert("fallback.default_chain", "默认降级链");
+        m.insert("fallback.custom_chains", "自定义降级链");
+        m.insert("fallback.enable_hint", "提示: 使用 'vcm fallback --enable' 启用智能降级");
+        m.insert("fallback.add_hint", "      使用 'vcm fallback add <primary> <fallback1> [fallback2]...' 添加降级链");
+        m.insert("fallback.primary", "主力");
+        m.insert("fallback.backup", "备选");
+        m.insert("fallback.fallback", "兜底");
+        m.insert("fallback.primary_not_found", "主力工具 '{}' 未找到，但仍会保存配置");
+        m.insert("fallback.chain_added", "已添加降级链");
+        m.insert("fallback.order", "降级顺序");
+        m.insert("fallback.not_enabled", "智能降级当前未启用");
+        m.insert("fallback.use_enable", "使用 'vcm fallback --enable' 启用");
+        m.insert("fallback.chain_removed", "已移除 '{}' 的降级链");
+        m.insert("fallback.chain_not_found", "未找到 '{}' 的降级链");
+        m.insert("fallback.enabled_msg", "智能降级已启用");
+        m.insert("fallback.auto_switch", "当主力工具不可用时，系统将自动切换到备选工具");
+        m.insert("fallback.disabled_msg", "智能降级已禁用");
+        m.insert("fallback.default_set", "已设置默认降级链");
+        m.insert("fallback.need_one_backup", "至少需要指定一个备选工具");
+        m.insert("fallback.need_two_tools", "默认降级链至少需要 2 个工具");
+        
+        // Key 命令
+        m.insert("key.title", "多账号管理");
+        m.insert("key.no_config", "暂无保存的 Key 配置");
+        m.insert("key.add_hint", "提示: 使用 'vcm key add <tool> <name> <key>' 添加账号");
+        m.insert("key.not_found", "未找到 '{}' 的 Key 配置");
+        m.insert("key.active", "当前激活");
+        m.insert("key.rotation_mode", "轮换模式");
+        m.insert("key.add_cmd", "命令: vcm key add <tool> <name> <key>   添加账号");
+        m.insert("key.switch_cmd", "      vcm key switch <tool> <name>       切换账号");
+        m.insert("key.remove_cmd", "      vcm key remove <tool> <name>       删除账号");
+        m.insert("key.rotate_cmd", "      vcm key rotate <tool> --enable     启用轮换");
+        m.insert("key.name_empty", "Key 名称不能为空");
+        m.insert("key.value_empty", "Key 值不能为空");
+        m.insert("key.per_request", "每次请求");
+        m.insert("key.hourly", "每小时");
+        m.insert("key.daily", "每天");
+        m.insert("key.weekly", "每周");
+        m.insert("key.exists", "Key '{}' 已存在，将被覆盖");
+        m.insert("key.added", "已添加 Key '{}' 到 {}");
+        m.insert("key.set_active", "已设为当前激活账号");
+        m.insert("key.switched", "已切换到账号");
+        m.insert("key.restart_hint", "重启工具后生效");
+        m.insert("key.removed", "已删除 Key");
+        m.insert("key.not_found_name", "未找到 Key");
+        m.insert("key.rotate_need_two", "启用轮换需要至少 2 个 Key");
+        m.insert("key.current_count", "当前只有 {} 个 Key");
+        m.insert("key.rotation_enabled", "已启用 Key 轮换");
+        m.insert("key.rotation_desc", "每次请求将使用不同的 Key");
+        m.insert("key.rotation_disabled", "已禁用 Key 轮换");
+        m.insert("key.current_active", "当前激活");
+        m.insert("key.type_trial", "试用");
+        m.insert("key.expires", "过期");
+        m.insert("key.no_active", "未设置激活账号");
+        m.insert("key.no_saved", "没有保存的 Key");
+        m.insert("key.name", "名称");
+        m.insert("key.status", "状态");
+        m.insert("key.type", "类型");
+        m.insert("key.note", "备注");
+        m.insert("key.official", "正式");
+        
+        // Recommend 命令
+        m.insert("recommend.title", "个性化推荐");
+        m.insert("recommend.based_usage", "基于您的使用习惯和需求推荐");
+        m.insert("recommend.install_free", "推荐安装 (免费专业级模型)");
+        m.insert("recommend.hot", "热门推荐");
+        m.insert("recommend.installed_overview", "已安装概览");
+        m.insert("recommend.installed_count", "已安装: {} 个工具");
+        m.insert("recommend.configured_count", "已配置: {c} / {t}");
+        m.insert("recommend.some_unconfigured", "部分工具未配置，运行 'vcm status' 查看详情");
+        m.insert("recommend.trending_title", "热门工具排行");
+        m.insert("recommend.rank", "排名");
+        m.insert("recommend.tool_col", "工具");
+        m.insert("recommend.vendor_col", "供应商");
+        m.insert("recommend.free_quota_col", "免费额度");
+        m.insert("recommend.pro_free", "专业级免费");
+        m.insert("recommend.paid", "付费");
+        m.insert("recommend.unknown", "未知");
+        m.insert("recommend.install_hint", "使用 'vcm install <tool>' 安装");
+        m.insert("recommend.new_title", "新上架工具");
+        m.insert("recommend.free_pro_models", "免费专业级模型");
+        m.insert("recommend.by_tag", "按标签筛选");
+        m.insert("recommend.no_tag_tools", "未找到标签为 '{}' 的工具");
+        m.insert("recommend.available_tags", "可用标签: ai, coding, cli, llm, google, anthropic, opensource");
+        m.insert("recommend.found_tools", "找到 {} 个工具");
+        m.insert("recommend.has_free_quota", "有免费额度");
+        m.insert("recommend.install", "安装");
+        
+        // Free --aggregate
+        m.insert("free.aggregate_title", "免费额度聚合面板");
+        m.insert("free.no_free_tools", "未找到有免费额度的工具");
+        m.insert("free.aggregate_stats", "聚合统计");
+        m.insert("free.tools_with_free", "有免费额度的工具");
+        m.insert("free.tools_with_pro", "提供专业级模型的工具");
+        m.insert("free.free_pro_models", "可免费使用的专业级模型");
+        m.insert("free.optimal_strategy", "最优免费组合策略");
+        m.insert("free.recommended_combo", "推荐组合");
+        m.insert("free.compare_hint", "提示: 使用 'vcm compare <tool1> <tool2>...' 对比多个工具");
+        m.insert("free.pro_only_hint", "      使用 'vcm free --pro' 只显示专业级模型");
         
         m
     })

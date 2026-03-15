@@ -223,7 +223,7 @@ fn main() -> anyhow::Result<()> {
             let key_action = if enable || disable {
                 KeyAction::Rotate { 
                     tool: tool.unwrap_or_default(),
-                    enable: enable 
+                    enable,
                 }
             } else {
                 match action.as_deref() {

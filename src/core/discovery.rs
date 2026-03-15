@@ -2,9 +2,8 @@
 
 use crate::models::*;
 use super::registry::Registry;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
-use std::time::Duration;
 
 /// 工具发现器
 pub struct Discovery {
@@ -115,7 +114,7 @@ impl Discovery {
     }
 
     /// 检测安装方式
-    fn detect_install_method(&self, path: &PathBuf) -> Option<PackageManager> {
+    fn detect_install_method(&self, path: &Path) -> Option<PackageManager> {
         let path_str = path.to_string_lossy();
 
         // 检查 npm

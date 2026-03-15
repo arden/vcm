@@ -1,6 +1,6 @@
 //! default 命令实现 - 设置默认工具
 
-use crate::core::{ConfigManager, Discovery, Registry};
+use crate::core::{ConfigManager, Registry};
 use crate::i18n::translate;
 use anyhow::{bail, Result};
 use console::style;

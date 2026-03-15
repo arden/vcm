@@ -44,7 +44,7 @@ impl InstallCommand {
         println!("{}", translate("install.using").replace("{}", &style(&method.manager.to_string()).yellow().to_string()));
 
         // 执行安装
-        self.do_install(&method)?;
+        self.do_install(method)?;
 
         println!("\n{} {}", style("✓").green(), translate("install.success").replace("{}", &method.package));
 

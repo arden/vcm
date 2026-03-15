@@ -2,7 +2,6 @@
 
 use anyhow::{bail, Result};
 use clap::CommandFactory;
-use std::io::Write;
 
 /// completions 命令
 pub struct CompletionsCommand {

@@ -61,7 +61,7 @@ impl AliasCommand {
     ) -> Result<()> {
         // 验证别名格式
         if alias.is_empty() {
-            bail!("别名不能为空");
+            bail!("{}", translate("alias.empty"));
         }
 
         // 检查别名是否是保留字（防止与命令冲突）
@@ -74,7 +74,7 @@ impl AliasCommand {
         ];
 
         if reserved_words.contains(&alias) {
-            bail!("'{}' 是保留命令，不能用作别名", alias);
+            bail!("{}", translate("alias.reserved").replace("{}", alias));
         }
 
         // 验证工具是否存在
@@ -88,8 +88,7 @@ impl AliasCommand {
                 println!(
                     "{}{}",
                     WARNING,
-                    style(format!("警告: 工具 '{}' 未在注册表中找到，但仍会创建别名", tool))
-                        .yellow()
+                    style(translate("alias.tool_not_found").replace("{}", tool)).yellow()
                 );
                 tool.to_string()
             }
@@ -98,8 +97,12 @@ impl AliasCommand {
         // 检查别名是否已存在
         if let Some(existing) = config.settings.aliases.get(alias) {
             println!(
-                "{}别名 '{}' 已映射到 '{}'，将更新为 '{}'",
-                WARNING, alias, existing, tool
+                "{}{}",
+                WARNING,
+                translate("alias.overwrite")
+                    .replace("{}", alias)
+                    .replace("{old}", existing)
+                    .replace("{new}", tool)
             );
         }
 
@@ -108,11 +111,10 @@ impl AliasCommand {
         config_manager.save_config(config)?;
 
         println!(
-            "{}已设置别名: {} -> {} ({})",
+            "{}{}",
             SPARKLE,
-            style(alias).cyan().bold(),
-            style(&tool_name).green(),
-            tool
+            translate("alias.set")
+                .replace("{}", &format!("{} -> {} ({})", style(alias).cyan().bold(), style(&tool_name).green(), tool))
         );
 
         Ok(())
@@ -125,7 +127,7 @@ impl AliasCommand {
             return Ok(());
         }
 
-        println!("\n{}", style("工具别名列表").bold());
+        println!("\n{}", style(translate("alias.list_title")).bold());
         println!("{}", "─".repeat(50));
 
         let registry = Registry::load()?;
@@ -146,8 +148,8 @@ impl AliasCommand {
         }
 
         println!("{}", "─".repeat(50));
-        println!("\n提示: 使用 'vcm <alias>' 快速启动工具");
-        println!("示例: 'vcm cc' 将启动 claude-code (如果设置了别名 cc)");
+        println!("\n{}", translate("alias.hint"));
+        println!("{}", translate("alias.hint_example"));
 
         Ok(())
     }
@@ -161,9 +163,9 @@ impl AliasCommand {
     ) -> Result<()> {
         if config.settings.aliases.remove(alias).is_some() {
             config_manager.save_config(config)?;
-            println!("{}已删除别名: {}", SPARKLE, style(alias).cyan());
+            println!("{}{}", SPARKLE, translate("alias.removed").replace("{}", &style(alias).cyan().to_string()));
         } else {
-            bail!("别名 '{}' 不存在", alias);
+            bail!("{}", translate("alias.not_found").replace("{}", alias));
         }
 
         Ok(())

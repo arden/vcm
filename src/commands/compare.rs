@@ -1,6 +1,7 @@
 //! 工具对比命令
 
 use crate::core::Registry;
+use crate::i18n::translate;
 use crate::models::Tool;
 use anyhow::{bail, Result};
 use console::style;
@@ -17,11 +18,11 @@ impl CompareCommand {
 
     pub fn execute(&self) -> Result<()> {
         if self.tools.len() < 2 {
-            bail!("至少需要指定两个工具进行对比");
+            bail!("{}", translate("compare.min_tools"));
         }
 
         if self.tools.len() > 5 {
-            bail!("最多支持同时对比 5 个工具");
+            bail!("{}", translate("compare.max_tools"));
         }
 
         let registry = Registry::load()?;
@@ -34,7 +35,7 @@ impl CompareCommand {
 
             match tool {
                 Some(t) => tools_to_compare.push(t),
-                None => bail!("工具 '{}' 未找到", tool_id),
+                None => bail!("{}", translate("compare.tool_not_found").replace("{}", tool_id)),
             }
         }
 
@@ -45,7 +46,7 @@ impl CompareCommand {
     }
 
     fn print_comparison(&self, tools: &[&Tool]) {
-        println!("\n{}", style("工具对比").bold());
+        println!("\n{}", style(translate("compare.title")).bold());
         println!("{}", "═".repeat(80));
 
         // 表头
@@ -53,24 +54,25 @@ impl CompareCommand {
             .map(|t| format!("{:<18}", t.name))
             .collect::<Vec<_>>()
             .join("│");
-        println!("{:<12}│{}", style("特性").bold(), style(header).bold());
+        println!("{:<12}│{}", style(translate("compare.feature")).bold(), style(header).bold());
         println!("{}", "─".repeat(80));
 
         // 供应商
-        self.print_row("供应商", tools.iter().map(|t| t.vendor.as_str()).collect());
+        self.print_row(&translate("compare.vendor"), tools.iter().map(|t| t.vendor.as_str()).collect());
 
         // 描述
         let descriptions: Vec<String> = tools.iter()
             .map(|t| {
                 let desc = &t.description;
-                if desc.len() > 16 {
-                    format!("{}...", &desc[..13])
+                let chars: Vec<char> = desc.chars().collect();
+                if chars.len() > 16 {
+                    format!("{}...", chars[..13].iter().collect::<String>())
                 } else {
                     desc.clone()
                 }
             })
             .collect();
-        self.print_row("描述", descriptions.iter().map(|s| s.as_str()).collect());
+        self.print_row(&translate("label.note"), descriptions.iter().map(|s| s.as_str()).collect());
 
         // 是否 CLI
         self.print_row("CLI", tools.iter().map(|t| if t.is_cli { "✓" } else { "✗" }).collect());
@@ -81,21 +83,23 @@ impl CompareCommand {
                 match &t.pricing {
                     Some(p) => {
                         if p.free_tier {
-                            let limit = p.free_limit.as_deref().unwrap_or("有");
-                            if limit.len() > 16 {
-                                format!("{}...", &limit[..13])
+                            let free_default = translate("pricing.free");
+                            let limit = p.free_limit.as_deref().unwrap_or(&free_default);
+                            let chars: Vec<char> = limit.chars().collect();
+                            if chars.len() > 16 {
+                                format!("{}...", chars[..13].iter().collect::<String>())
                             } else {
                                 limit.to_string()
                             }
                         } else {
-                            "付费".to_string()
+                            translate("pricing.paid")
                         }
                     }
-                    None => "未知".to_string()
+                    None => translate("msg.unknown")
                 }
             })
             .collect();
-        self.print_row("免费额度", pricing_info.iter().map(|s| s.as_str()).collect());
+        self.print_row(&translate("compare.free_quota"), pricing_info.iter().map(|s| s.as_str()).collect());
 
         // 免费专业级模型
         let pro_models: Vec<String> = tools.iter()
@@ -112,18 +116,18 @@ impl CompareCommand {
                 }
             })
             .collect();
-        self.print_row("专业模型", pro_models.iter().map(|s| s.as_str()).collect());
+        self.print_row(&translate("compare.pro_models"), pro_models.iter().map(|s| s.as_str()).collect());
 
         // 需要信用卡
-        let cc_required: Vec<&str> = tools.iter()
+        let cc_required: Vec<String> = tools.iter()
             .map(|t| {
                 match &t.pricing {
-                    Some(p) => if p.credit_card_required { "是" } else { "否" }
-                    None => "未知"
+                    Some(p) => if p.credit_card_required { translate("msg.yes") } else { translate("msg.no") }
+                    None => translate("msg.unknown")
                 }
             })
             .collect();
-        self.print_row("需信用卡", cc_required);
+        self.print_row(&translate("compare.card_required"), cc_required.iter().map(|s| s.as_str()).collect());
 
         // 安装方式
         let install_methods: Vec<String> = tools.iter()
@@ -138,16 +142,16 @@ impl CompareCommand {
                 }
             })
             .collect();
-        self.print_row("安装方式", install_methods.iter().map(|s| s.as_str()).collect());
+        self.print_row(&translate("compare.install_method"), install_methods.iter().map(|s| s.as_str()).collect());
 
         // 标签
         let tags: Vec<String> = tools.iter()
             .map(|t| t.tags.join(", "))
             .collect();
-        self.print_row("标签", tags.iter().map(|s| s.as_str()).collect());
+        self.print_row(&translate("compare.tags"), tags.iter().map(|s| s.as_str()).collect());
 
         // 详细模型对比
-        println!("\n{}", style("可用模型详情").bold());
+        println!("\n{}", style(translate("compare.model_details")).bold());
         println!("{}", "─".repeat(80));
 
         for tool in tools {
@@ -155,28 +159,28 @@ impl CompareCommand {
                 println!("\n{} {}", style("▸").cyan(), style(&tool.name).bold());
 
                 if !pricing.free_models.is_empty() {
-                    println!("  {}", style("免费模型:").green());
+                    println!("  {}", style(format!("{}:", translate("compare.free_models"))).green());
                     for model in &pricing.free_models {
                         let pro_badge = if model.pro_grade { 
-                            style(" [专业级]").yellow().to_string() 
+                            format!(" [{}]", translate("compare.pro_grade"))
                         } else { 
                             String::new() 
                         };
                         let desc = model.description.as_deref().unwrap_or("");
-                        println!("    • {}{} {}", model.name, pro_badge, style(desc).dim());
+                        println!("    • {}{} {}", model.name, style(pro_badge).yellow(), style(desc).dim());
                     }
                 }
 
                 if !pricing.paid_models.is_empty() {
-                    println!("  {}", style("付费模型:").yellow());
+                    println!("  {}", style(format!("{}:", translate("compare.paid_models"))).yellow());
                     for model in &pricing.paid_models {
                         let pro_badge = if model.pro_grade { 
-                            style(" [专业级]").yellow().to_string() 
+                            format!(" [{}]", translate("compare.pro_grade"))
                         } else { 
                             String::new() 
                         };
                         let desc = model.description.as_deref().unwrap_or("");
-                        println!("    • {}{} {}", model.name, pro_badge, style(desc).dim());
+                        println!("    • {}{} {}", model.name, style(pro_badge).yellow(), style(desc).dim());
                     }
                 }
             }

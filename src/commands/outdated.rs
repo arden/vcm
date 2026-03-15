@@ -9,6 +9,7 @@ use std::process::Command;
 
 /// outdated 命令
 pub struct OutdatedCommand {
+    #[allow(dead_code)]
     json: bool,
 }
 
@@ -191,6 +192,7 @@ impl OutdatedCommand {
 
 /// 过期工具信息
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 struct OutdatedTool {
     tool_id: String,
     tool_name: String,

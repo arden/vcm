@@ -1,7 +1,8 @@
 //! 工具推荐命令
 
 use crate::core::{Discovery, Registry};
-use crate::models::{InstalledTool, Tool};
+use crate::i18n::translate;
+use crate::models::Tool;
 use anyhow::Result;
 use console::style;
 
@@ -52,9 +53,9 @@ impl RecommendCommand {
 
     /// 个人推荐（基于已安装工具和免费额度）
     fn show_personal_recommendations(&self, registry: &Registry, installed: &[crate::models::InstalledTool]) -> Result<()> {
-        println!("\n{}", style("🎯 个性化推荐").cyan().bold());
+        println!("\n{}", style(format!("🎯 {}", translate("recommend.title"))).cyan().bold());
         println!("{}", "═".repeat(70));
-        println!("\n{}", style("基于您的使用习惯和需求推荐:").dim());
+        println!("\n{}", style(translate("recommend.based_usage")).dim());
 
         // 已安装的工具 ID
         let installed_ids: Vec<_> = installed.iter()
@@ -77,7 +78,7 @@ impl RecommendCommand {
         });
 
         if !free_pro_tools.is_empty() {
-            println!("\n  {}", style("💡 推荐安装 (免费专业级模型):").bold());
+            println!("\n  {}", style(format!("💡 {}:", translate("recommend.install_free"))).bold());
             for tool in free_pro_tools.iter().take(5) {
                 self.print_tool_recommendation(tool);
             }
@@ -89,22 +90,25 @@ impl RecommendCommand {
             .collect();
 
         if !featured_not_installed.is_empty() {
-            println!("\n  {}", style("⭐ 热门推荐:").bold());
+            println!("\n  {}", style(format!("⭐ {}:", translate("recommend.hot"))).bold());
             for tool in featured_not_installed.iter().take(3) {
                 self.print_tool_recommendation(tool);
             }
         }
 
         // 显示已安装概览
-        println!("\n  {}", style("📊 已安装概览:").bold());
-        println!("    已安装: {} 个工具", installed.len());
+        println!("\n  {}", style(format!("📊 {}:", translate("recommend.installed_overview"))).bold());
+        println!("    {}", translate("recommend.installed_count").replace("{}", &installed.len().to_string()));
 
         let configured_count = installed.iter().filter(|t| t.is_configured).count();
-        println!("    已配置: {} / {}", configured_count, installed.len());
+        println!("    {}", translate("recommend.configured_count")
+            .replace("{c}", &configured_count.to_string())
+            .replace("{t}", &installed.len().to_string()));
 
         if configured_count < installed.len() {
-            println!("\n    {} 部分工具未配置，运行 'vcm status' 查看详情",
-                style("⚠️").yellow());
+            println!("\n    {} {}",
+                style("⚠️").yellow(),
+                translate("recommend.some_unconfigured"));
         }
 
         println!("{}", "═".repeat(70));
@@ -114,7 +118,7 @@ impl RecommendCommand {
 
     /// 热门工具
     fn show_trending(&self, registry: &Registry) -> Result<()> {
-        println!("\n{}", style("🔥 热门工具排行").cyan().bold());
+        println!("\n{}", style(format!("🔥 {}", translate("recommend.trending_title"))).cyan().bold());
         println!("{}", "═".repeat(70));
 
         // 按 featured 和定价排序
@@ -129,7 +133,11 @@ impl RecommendCommand {
             b_free.cmp(&a_free)
         });
 
-        println!("\n{}", style("排名  工具              供应商         免费额度").bold());
+        println!("\n{}  {:<18} {:<14} {}",
+            style(translate("recommend.rank")).bold(),
+            style(translate("recommend.tool_col")).bold(),
+            style(translate("recommend.vendor_col")).bold(),
+            style(translate("recommend.free_quota_col")).bold());
         println!("{}", "─".repeat(60));
 
         for (i, tool) in tools.iter().enumerate().take(10) {
@@ -137,14 +145,14 @@ impl RecommendCommand {
 
             let free_status = if let Some(ref pricing) = tool.pricing {
                 if pricing.has_free_pro_models() {
-                    style("✓ 专业级免费").green()
+                    style(format!("✓ {}", translate("recommend.pro_free"))).green()
                 } else if pricing.free_tier {
-                    style("✓ 有免费额度").cyan()
+                    style(format!("✓ {}", translate("recommend.has_free_quota"))).cyan()
                 } else {
-                    style("- 付费").dim()
+                    style(format!("- {}", translate("recommend.paid"))).dim()
                 }
             } else {
-                style("- 未知").dim()
+                style(format!("- {}", translate("recommend.unknown"))).dim()
             };
 
             println!("{}   {:<18} {:<14} {}",
@@ -156,14 +164,14 @@ impl RecommendCommand {
         }
 
         println!("{}", "═".repeat(70));
-        println!("\n使用 'vcm install <tool>' 安装工具");
+        println!("\n{}", translate("recommend.install_hint"));
 
         Ok(())
     }
 
     /// 新工具
     fn show_new_tools(&self, registry: &Registry) -> Result<()> {
-        println!("\n{}", style("🆕 新上架工具").cyan().bold());
+        println!("\n{}", style(format!("🆕 {}", translate("recommend.new_title"))).cyan().bold());
         println!("{}", "═".repeat(70));
 
         // 按 updated 日期排序（如果有）
@@ -187,15 +195,16 @@ impl RecommendCommand {
                         .filter(|m| m.pro_grade)
                         .collect();
                     if !pro_models.is_empty() {
-                        println!("    {} 免费专业级模型: {}",
+                        println!("    {} {}: {}",
                             style("🎁").yellow(),
+                            translate("recommend.free_pro_models"),
                             pro_models.iter().map(|m| m.name.as_str()).collect::<Vec<_>>().join(", ")
                         );
                     }
                 }
             }
 
-            println!("    安装: vcm install {}", tool.id);
+            println!("    {}: vcm install {}", translate("recommend.install"), tool.id);
         }
 
         println!("\n{}", "═".repeat(70));
@@ -205,18 +214,18 @@ impl RecommendCommand {
 
     /// 按标签推荐
     fn show_by_tag(&self, registry: &Registry, tag: &str) -> Result<()> {
-        println!("\n{} {}", style("🏷️ 按标签筛选:").cyan().bold(), style(tag).yellow());
+        println!("\n{} {}", style(format!("🏷️ {}:", translate("recommend.by_tag"))).cyan().bold(), style(tag).yellow());
         println!("{}", "═".repeat(70));
 
         let tools = registry.by_tag(tag);
 
         if tools.is_empty() {
-            println!("\n未找到标签为 '{}' 的工具", tag);
-            println!("\n可用标签: ai, coding, cli, llm, google, anthropic, opensource");
+            println!("\n{}", translate("recommend.no_tag_tools").replace("{}", tag));
+            println!("\n{}", translate("recommend.available_tags"));
             return Ok(());
         }
 
-        println!("\n找到 {} 个工具:\n", tools.len());
+        println!("\n{}\n", translate("recommend.found_tools").replace("{}", &tools.len().to_string()));
 
         for tool in &tools {
             println!("  {} {} - {}",
@@ -227,7 +236,7 @@ impl RecommendCommand {
 
             if let Some(ref pricing) = tool.pricing {
                 if pricing.free_tier {
-                    print!("    {}", style("✓ 有免费额度").green());
+                    print!("    {}", style(format!("✓ {}", translate("recommend.has_free_quota"))).green());
                     if let Some(ref limit) = pricing.free_limit {
                         print!(" ({})", limit);
                     }
@@ -237,7 +246,7 @@ impl RecommendCommand {
         }
 
         println!("\n{}", "═".repeat(70));
-        println!("使用 'vcm install <tool>' 安装工具");
+        println!("{}", translate("recommend.install_hint"));
 
         Ok(())
     }
@@ -280,13 +289,13 @@ impl RecommendCommand {
                     .filter(|m| m.pro_grade)
                     .map(|m| m.name.as_str())
                     .collect();
-                println!("    {} 免费专业级: {}",
-                    style("🎁").yellow(),
+                println!("    {}: {}",
+                    style(format!("🎁 {}", translate("recommend.free_pro_models"))).yellow(),
                     pro_models.join(", ")
                 );
             }
         }
 
-        println!("    安装: vcm install {}", tool.id);
+        println!("    {}: vcm install {}", translate("recommend.install"), tool.id);
     }
 }
